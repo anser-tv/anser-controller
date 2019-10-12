@@ -1,4 +1,4 @@
-[![Build](https://github.com/anser-tv/anser-types/workflows/Node%20CI/badge.svg)](https://github.com/anser-tv/anser-types/actions)
+[![Build](https://github.com/anser-tv/anser-controller/workflows/Node%20CI/badge.svg)](https://github.com/anser-tv/anser-controller/actions)
 
 # Anser Types
 
