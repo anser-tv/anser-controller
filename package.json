@@ -1,0 +1,43 @@
+{
+  "name": "anser-controller",
+  "version": "1.0.0",
+  "description": "Anser Controller package",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "author": "Tom Lee",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn audit && yarn lint && yarn test && tsc",
+    "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
+    "test": "yarn lint && jest --passWithNoTests",
+    "watch": "nodemon"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.6.8",
+    "eslint": "^6.1.0",
+    "eslint-plugin-import": "^2.18.2",
+    "jest": "^24.8.0",
+    "nodemon": "^1.19.1",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.3.0",
+    "tslint": "^5.18.0",
+    "typescript": "^3.5.3"
+  },
+  "dependencies": {
+    "anser-types": "git+https://github.com/anser-tv/anser-types.git"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      ".git",
+      "node_modules"
+    ],
+    "watch": [
+      "src"
+    ],
+    "exec": "yarn test",
+    "ext": "ts"
+  }
+}
