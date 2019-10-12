@@ -8,6 +8,8 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn audit && yarn lint && yarn test && tsc",
+    "build:install": "tsc",
+    "install": "yarn run build:install",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
     "test": "yarn lint && jest --passWithNoTests",
     "watch": "nodemon"
