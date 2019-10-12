@@ -428,7 +428,7 @@ ajv@^6.10.0, ajv@^6.10.2, ajv@^6.5.5:
 
 "anser-types@git+https://github.com/anser-tv/anser-types.git":
   version "1.0.0"
-  resolved "git+https://github.com/anser-tv/anser-types.git#2bf51e32f5e2bd83a2a00991d564a6409ecc7e94"
+  resolved "git+https://github.com/anser-tv/anser-types.git#71779352c51f09d38a4148dade70c53e1eb36e4c"
 
 ansi-align@^2.0.0:
   version "2.0.0"
