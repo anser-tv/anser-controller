@@ -21,6 +21,16 @@ Ensure your code passes linting with `yarn lint`. We recoomend using VS Code and
 - Pulic functions should be in UpperCamelCase.
 - Private functions should be in lowerCamelCase.
 
+## Commit Messages
+- Fixes should be prefixed with `fix:`
+- Features should be prefixed with `feat:`
+- Other changes (e.g. documentation, bumping package version) should be prefixed with `chore:`
+
+## Branches
+- Branches should follow a similar naming convention to Commit Messages e.g. `feat/some-feature`, `chore/bump-package`
+- Major changes must be made on their own branch
+- Minor changes (most chores) can be done on master by those with push permissions.
+
 ## Tests
 
 Tests should be written in the form:
