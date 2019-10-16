@@ -1,9 +1,13 @@
-export interface IHeartBeat {
+export interface IHeartbeat {
 	time: Date
 }
 
-export function BodyIsHeartBeat (body: any): boolean {
-	const template: IHeartBeat = {
+export interface IHeartbeatResponse {
+	commands?: string[]
+}
+
+export function BodyIsHeartbeat (body: any): boolean {
+	const template: IHeartbeat = {
 		time: new Date()
 	}
 

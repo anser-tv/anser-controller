@@ -1,11 +1,11 @@
-import { BodyIsHeartBeat, IHeartBeat } from '../heartbeat'
+import { BodyIsHeartbeat, IHeartbeat } from '../heartbeat'
 
 describe('Body Check', () => {
 	it('Accepts a valid interface', () => {
-		const heartbeat: IHeartBeat = {
+		const heartbeat: IHeartbeat = {
 			time: new Date()
 		}
-		expect(BodyIsHeartBeat(heartbeat)).toBe(true)
+		expect(BodyIsHeartbeat(heartbeat)).toBe(true)
 	})
 
 	it('Rejects an invalid interface', () => {
@@ -13,6 +13,6 @@ describe('Body Check', () => {
 			neverUseThisKey: '',
 			time: new Date()
 		}
-		expect(BodyIsHeartBeat(heartbeat)).toBe(false)
+		expect(BodyIsHeartbeat(heartbeat)).toBe(false)
 	})
 })
