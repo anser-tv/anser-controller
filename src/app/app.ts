@@ -7,7 +7,6 @@ export const API_VERSION = 'v1.0'
 
 const DEBUG = process.env.DEBUG || false
 const PORT = process.env.PORT || 5000
-const AUTH_KEYS = process.env.auth_keys || 'config/auth_keys.txt'
 
 /**
  * Handles all API requests.
@@ -16,8 +15,8 @@ export class App {
 	public app: express.Express
 	public auth: Auth
 	public server: http.Server
-	constructor () {
-		this.auth = new Auth(AUTH_KEYS)
+	constructor (authKeys: string) {
+		this.auth = new Auth(authKeys)
 		this.app = express()
 		// Perform auth challenge against all routes except '/'
 		this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
