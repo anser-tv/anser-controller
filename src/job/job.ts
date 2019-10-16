@@ -1,10 +1,21 @@
 import { IFunctionConfig, IFunctionInput, IFunctionOutput } from '../function/description'
 
+export enum TargetType {
+	WORKER = 'WORKER',
+	GROUP = 'GROUP'
+}
+
 /**
  * Stores the state of a Job, is an instace of a function.
  */
 export class Job {
-	constructor (public config: IFunctionConfig[], public inputs: IFunctionInput[], public outputs: IFunctionOutput[]) { }
+	constructor (
+		public targetType: TargetType,
+		public target: string,
+		public config: IFunctionConfig[],
+		public inputs: IFunctionInput[],
+		public outputs: IFunctionOutput[]
+	) { }
 
 	/**
 	 * Checks if this job can be run.
