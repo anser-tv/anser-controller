@@ -1,3 +1,4 @@
+import { IHeartBeat } from 'anser-types'
 import { Response } from 'supertest'
 import supertest from 'supertest'
 import { App } from '../app/app'
@@ -65,8 +66,16 @@ describe('Controller app: Gets all heartbeats for a given worker', () => {
 })
 
 describe('Controller app: Adds a heartbeat to a given worker', () => {
-	it('Is not implemented', async () => {
+	it('Rejects an invalid request body', async () => {
 		const res = await postToApp(`/api/${API_VERSION}/heartbeat/test-worker`, 'Hello', { })
-		expect(res.status).toEqual(501) // TODO: Not implemented
+		expect(res.status).toEqual(400)
+	})
+
+	it('Accepts a valid request body', async () => {
+		const heartbeat: IHeartBeat = {
+			time: new Date()
+		}
+		const res = await postToApp(`/api/${API_VERSION}/heartbeat/test-worker`, 'Hello', heartbeat)
+		expect(res.status).toEqual(501)
 	})
 })

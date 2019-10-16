@@ -1,7 +1,9 @@
+import { BodyIsHeartBeat, IHeartBeat } from 'anser-types'
 import express from 'express'
 import http from 'http'
 import { Auth } from '../auth/auth'
 import { logger, LogRequest, LogResponse } from '../logger/logger'
+import { State } from './state'
 
 export const API_VERSION = 'v1.0'
 
@@ -15,9 +17,12 @@ export class App {
 	public app: express.Express
 	public auth: Auth
 	public server: http.Server
+	public state: State
 	constructor (authKeys: string) {
 		this.auth = new Auth(authKeys)
+		this.state = new State()
 		this.app = express()
+		this.app.use(express.json())
 		// Perform auth challenge against all routes except '/'
 		this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
 			if (!req.url.match(/^\/$/)) {
@@ -135,7 +140,16 @@ export class App {
 		this.app.post(
 			`/api/${API_VERSION}/heartbeat/:workerId`,
 			(req: express.Request, res: express.Response) => {
-				LogResponse('Not implemented', logger)
+				const body = req.body
+				if (!BodyIsHeartBeat(body)) {
+					LogResponse('400: Bad Request', logger)
+					const heartbeatExample: IHeartBeat = {
+						time: new Date()
+					}
+					res.statusMessage = `HeartBeat must be in the form: ${JSON.stringify(heartbeatExample)}`
+					res.status(400).end()
+				}
+
 				res.statusMessage = 'Not implemented'
 				res.status(501).end()
 			}
