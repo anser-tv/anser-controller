@@ -12,7 +12,8 @@ export const logger = createLogger({
 			format: 'YYYY-MM-DD HH:mm:ss'
 		}),
 		format.printf(
-			(info) => `${info.timestamp} ${info.level}: ${info.message}` + (info.splat !== undefined ? `${info.splat}` : ' ')
+			(info: any) =>
+				`${info.timestamp} ${info.level}: ${info.message}` + (info.splat !== undefined ? `${info.splat}` : ' ')
 		)
 	),
 	level: 'debug',
