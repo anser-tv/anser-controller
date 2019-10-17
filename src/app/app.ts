@@ -1,4 +1,4 @@
-import { BodyIsHeartBeat, IHeartBeat } from 'anser-types'
+import { BodyIsHeartbeat, Heartbeat } from 'anser-types'
 import express from 'express'
 import http from 'http'
 import { Auth } from '../auth/auth'
@@ -73,6 +73,12 @@ export class App {
 		}
 	}
 
+	private sendBadRequest (res: express.Response, message: string): void {
+		LogResponse('400 Bad Request', logger)
+		res.statusMessage = message
+		res.status(400).end()
+	}
+
 	private setupBindings (): void {
 		/**
 		 * Default route, useful for checking the API is online.
@@ -141,17 +147,17 @@ export class App {
 			`/api/${API_VERSION}/heartbeat/:workerId`,
 			(req: express.Request, res: express.Response) => {
 				const body = req.body
-				if (!BodyIsHeartBeat(body)) {
-					LogResponse('400: Bad Request', logger)
-					const heartbeatExample: IHeartBeat = {
+				if (!BodyIsHeartbeat(body)) {
+					const heartbeatExample: Heartbeat = {
 						time: new Date()
 					}
-					res.statusMessage = `HeartBeat must be in the form: ${JSON.stringify(heartbeatExample)}`
-					res.status(400).end()
+					this.sendBadRequest(res, `Heartbeat must be in the form: ${JSON.stringify(heartbeatExample)}`)
 				}
 
-				res.statusMessage = 'Not implemented'
-				res.status(501).end()
+				const result = this.state.AddHeartbeat(req.params.workerId, body as Heartbeat)
+
+				if (result.commands && result.commands.length) res.send(result.commands)
+				res.status(200).end()
 			}
 		)
 	}

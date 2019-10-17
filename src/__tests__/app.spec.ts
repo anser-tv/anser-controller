@@ -1,4 +1,4 @@
-import { IHeartBeat } from 'anser-types'
+import { Heartbeat, HeartbeatCommandType } from 'anser-types'
 import { Response } from 'supertest'
 import supertest from 'supertest'
 import { App } from '../app/app'
@@ -72,10 +72,32 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 	})
 
 	it('Accepts a valid request body', async () => {
-		const heartbeat: IHeartBeat = {
+		const heartbeat: Heartbeat = {
 			time: new Date()
 		}
 		const res = await postToApp(`/api/${API_VERSION}/heartbeat/test-worker`, 'Hello', heartbeat)
-		expect(res.status).toEqual(501)
+		expect(res.status).toEqual(200)
+		expect(res.body).toEqual([{
+			type: HeartbeatCommandType.SendSystemInfo
+		}])
+	})
+
+	it('Requests system info only once', async () => {
+		const heartbeat: Heartbeat = {
+			time: new Date()
+		}
+		const app = new App('src/__tests__/mocks/auth_keys.txt')
+		const res1 = await supertest(app.app)
+			.post(`/api/${API_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+		const res2 = await supertest(app.app)
+			.post(`/api/${API_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+		expect(res1.status).toEqual(200)
+		expect(res1.body).toEqual([{
+			type: HeartbeatCommandType.SendSystemInfo
+		}])
+
+		expect(res2.status).toEqual(200)
+		expect(res2.body).toEqual({ })
+		app.server.close()
 	})
 })
