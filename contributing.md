@@ -16,7 +16,7 @@ Ensure your code passes linting with `yarn lint`. We recoomend using VS Code and
 
 ## Naming
 
-- Files should be in lowerCamelCase.
+- Files should be in snake-case.
 - All exported members (classes, enums, etc) should be in UpperCamelCase.
 - Pulic functions should be in UpperCamelCase.
 - Private functions should be in lowerCamelCase.
