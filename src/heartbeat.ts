@@ -1,9 +1,11 @@
+import { HeartbeatCommand } from './heartbeat-commands/heartbeat-commands'
+
 export interface Heartbeat {
 	time: Date
 }
 
 export interface HeartbeatResponse {
-	commands?: string[]
+	commands?: HeartbeatCommand[]
 }
 
 export function BodyIsHeartbeat (body: any): boolean {
