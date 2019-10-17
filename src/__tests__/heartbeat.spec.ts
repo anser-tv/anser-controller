@@ -1,8 +1,8 @@
-import { BodyIsHeartbeat, IHeartbeat } from '../heartbeat'
+import { BodyIsHeartbeat, Heartbeat } from '../heartbeat'
 
 describe('Body Check', () => {
 	it('Accepts a valid interface', () => {
-		const heartbeat: IHeartbeat = {
+		const heartbeat: Heartbeat = {
 			time: new Date()
 		}
 		expect(BodyIsHeartbeat(heartbeat)).toBe(true)
