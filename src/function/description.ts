@@ -9,35 +9,35 @@ export enum VideoIOType {
 	RTMP
 }
 
-export interface IFunctionDescription {
+export interface FunctionDescription {
 	name: string
 	author: string
 	version: string
 	mainFile: string
-	config: IFunctionConfig[]
-	inputs: IFunctionInput[]
-	outputs: IFunctionOutput[]
+	config: FunctionConfig[]
+	inputs: FunctionInput[]
+	outputs: FunctionOutput[]
 }
 
-export interface IFunctionConfig {
+export interface FunctionConfig {
 	name: string
 	id: string
 	type: ConfigType
 }
 
-export interface IFunctionInput {
+export interface FunctionInput {
 	name: string
 	id: string
 	type: VideoIOType
 }
 
-export interface IFunctionOutput {
+export interface FunctionOutput {
 	name: string
 	id: string
 	type: VideoIOType
 }
 
-export const SampleFunction: IFunctionDescription = {
+export const SampleFunction: FunctionDescription = {
 	author: 'Tom Lee',
 	config: [
 		{

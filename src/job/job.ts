@@ -1,4 +1,4 @@
-import { IFunctionConfig, IFunctionInput, IFunctionOutput } from '../function/description'
+import { FunctionConfig, FunctionInput, FunctionOutput } from '../function/description'
 
 export enum TargetType {
 	WORKER = 'WORKER',
@@ -12,9 +12,9 @@ export class Job {
 	constructor (
 		public targetType: TargetType,
 		public target: string,
-		public config: IFunctionConfig[],
-		public inputs: IFunctionInput[],
-		public outputs: IFunctionOutput[]
+		public config: FunctionConfig[],
+		public inputs: FunctionInput[],
+		public outputs: FunctionOutput[]
 	) { }
 
 	/**
@@ -41,15 +41,15 @@ export class Job {
 		return Promise.resolve(false)
 	}
 
-	private getConfigById (id: string): IFunctionConfig | undefined {
+	private getConfigById (id: string): FunctionConfig | undefined {
 		return this.config.find((config) => config.id === id)
 	}
 
-	private getInputById (id: string): IFunctionInput | undefined {
+	private getInputById (id: string): FunctionInput | undefined {
 		return this.inputs.find((input) => input.id === id)
 	}
 
-	private getOutputById (id: string): IFunctionOutput | undefined {
+	private getOutputById (id: string): FunctionOutput | undefined {
 		return this.outputs.find((output) => output.id === id)
 	}
 }

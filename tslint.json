@@ -55,9 +55,15 @@
             {
                 "classes": true,
                 "methods": {
-                    "privacies": ["public"]
+                    "privacies": [
+                        "public"
+                    ]
                 }
             }
+        ],
+        "interface-name": [
+            true,
+            "never-prefix"
         ]
     },
     "rulesDirectory": [],
