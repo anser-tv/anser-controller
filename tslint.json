@@ -55,10 +55,17 @@
             {
                 "classes": true,
                 "methods": {
-                    "privacies": ["public"]
+                    "privacies": [
+                        "public"
+                    ]
                 }
             }
-        ]
+        ],
+        "variable-name": {
+            "options": [
+                "allow-leading-underscore"
+            ]
+        }
     },
     "rulesDirectory": [],
     "linterOptions": {
