@@ -7,14 +7,14 @@ import { API_VERSION } from '../app/app'
 async function getFromApp (url: string, key: string): Promise<Response> {
 	const app = new App('src/__tests__/mocks/auth_keys.txt')
 	const res = await supertest(app.app).get(url).set('auth-key', key)
-	app.server.close()
+	app.Close()
 	return Promise.resolve(res)
 }
 
 async function postToApp (url: string, key: string, body: any): Promise<Response> {
 	const app = new App('src/__tests__/mocks/auth_keys.txt')
 	const res = await supertest(app.app).post(url).set('auth-key', key).send(body)
-	app.server.close()
+	app.Close()
 	return Promise.resolve(res)
 }
 
@@ -22,7 +22,7 @@ describe('Controller app: Is alive', () => {
 	it('Responds to GET /', async () => {
 		const app = new App('src/__tests__/mocks/auth_keys.txt')
 		const res = await supertest(app.app).get('/')
-		app.server.close()
+		app.Close()
 		expect(res.status).toEqual(200)
 	})
 })
@@ -98,6 +98,6 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 
 		expect(res2.status).toEqual(200)
 		expect(res2.body).toEqual({ })
-		app.server.close()
+		app.Close()
 	})
 })

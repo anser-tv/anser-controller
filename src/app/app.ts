@@ -18,7 +18,7 @@ export class App {
 	public app: express.Express
 	public auth: Auth
 	public server: http.Server
-	public serverDebug?: http.Server
+	public serverDevelop?: http.Server
 	public state: State
 	constructor (authKeys: string) {
 		this.auth = new Auth(authKeys)
@@ -41,9 +41,26 @@ export class App {
 		logger.info(`App is running on https://127.0.0.1:${PORT}`)
 		/* istanbul ignore next*/
 		if (DEBUG) {
-			this.serverDebug = http.createServer(this.app)
-			this.serverDebug.listen((PORT as number) + 1)
+			this.serverDevelop = http.createServer(this.app)
+			this.serverDevelop.listen((PORT as number) + 1)
 			logger.warn(`App is serving over HTTP at http://127.0.0.1:${(PORT as number) + 1}. This is STRONGLY discouraged for deployment.`)
+		}
+	}
+
+	/**
+	 * Closes the server.
+	 */
+	public Close (): void {
+		/* istanbul ignore next */
+		if (this.server.listening) {
+			logger.info('Closing server')
+			this.server.close(() => logger.info('Server closed'))
+		}
+
+		/* istanbul ignore next */
+		if (this.serverDevelop && this.serverDevelop.listening) {
+			logger.info('Closing develop server')
+			this.serverDevelop.close(() => logger.info('Develop server closed'))
 		}
 	}
 
