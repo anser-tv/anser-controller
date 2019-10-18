@@ -1,6 +1,7 @@
 import { BodyIsHeartbeat, Heartbeat } from 'anser-types'
 import express from 'express'
 import http from 'http'
+import https from 'https'
 import { Auth } from '../auth/auth'
 import { logger, LogRequest, LogResponse } from '../logger/logger'
 import { State } from './state'
@@ -17,6 +18,7 @@ export class App {
 	public app: express.Express
 	public auth: Auth
 	public server: http.Server
+	public serverDebug?: http.Server
 	public state: State
 	constructor (authKeys: string) {
 		this.auth = new Auth(authKeys)
@@ -34,9 +36,15 @@ export class App {
 		})
 		// Register all routes
 		this.setupBindings()
-		this.server = this.app.listen(PORT, () => {
-			logger.info(`App is running on http://localhost:${PORT}`)
-		})
+		this.server = https.createServer(this.app)
+		this.server.listen(PORT)
+		logger.info(`App is running on https://127.0.0.1:${PORT}`)
+		/* istanbul ignore next*/
+		if (DEBUG) {
+			this.serverDebug = http.createServer(this.app)
+			this.serverDebug.listen((PORT as number) + 1)
+			logger.warn(`App is serving over HTTP at http://127.0.0.1:${(PORT as number) + 1}. This is STRONGLY discouraged for deployment.`)
+		}
 	}
 
 	private isAuthenticated (req: express.Request): boolean {
