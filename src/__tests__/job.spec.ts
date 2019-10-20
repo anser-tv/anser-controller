@@ -3,8 +3,10 @@ import { Job, TargetType } from '../job/job'
 
 const sampleInput = new VideoIO('Input', 'input', VideoIOType.RTMP)
 sampleInput.format = '1080i50'
+sampleInput.aspectRatio = '16:9'
 const sampleOutput = new VideoIO('Output', 'output', VideoIOType.RTMP)
 sampleOutput.format = '1080i50'
+sampleOutput.aspectRatio = '16:9'
 
 const SAMPLE_FUNCTION: FunctionDescription = {
 	author: 'Tom Lee',
@@ -103,5 +105,6 @@ describe('Job', () => {
 		expect(result.id === 'output')
 		expect(result.name === 'Output')
 		expect(result.type === VideoIOType.RTMP)
+		expect(result.aspectRatio === '16:9')
 	})
 })
