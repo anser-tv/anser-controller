@@ -64,7 +64,12 @@
         "interface-name": [
             true,
             "never-prefix"
-        ]
+        ],
+        "variable-name": {
+            "options": [
+                "allow-leading-underscore"
+            ]
+        }
     },
     "rulesDirectory": [],
     "linterOptions": {
