@@ -36,32 +36,3 @@ export interface FunctionOutput {
 	id: string
 	type: VideoIOType
 }
-
-export const SampleFunction: FunctionDescription = {
-	author: 'Tom Lee',
-	config: [
-		{
-			id: 'videoCodec',
-			name: 'Video Codec',
-			type: ConfigType.STRING
-		}
-	],
-	mainFile: 'index.js',
-	name: 'Transcode',
-	version: '1.0.0',
-
-	inputs: [
-		{
-			id: 'input',
-			name: 'Input',
-			type: VideoIOType.RTMP
-		}
-	],
-	outputs: [
-		{
-			id: 'output',
-			name: 'Output',
-			type: VideoIOType.RTMP
-		}
-	]
-}
