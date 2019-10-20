@@ -15,8 +15,8 @@ export interface FunctionDescription {
 	version: string
 	mainFile: string
 	config: FunctionConfig[]
-	inputs: FunctionInput[]
-	outputs: FunctionOutput[]
+	inputs: VideoIO[]
+	outputs: VideoIO[]
 }
 
 export interface FunctionConfig {
@@ -25,14 +25,28 @@ export interface FunctionConfig {
 	type: ConfigType
 }
 
-export interface FunctionInput {
-	name: string
-	id: string
-	type: VideoIOType
-}
+/**
+ * Represents an IO video stream.
+ */
+export class VideoIO {
+	private _format: string
 
-export interface FunctionOutput {
-	name: string
-	id: string
-	type: VideoIOType
+	constructor (
+		public name: string,
+		public id: string,
+		public type: VideoIOType
+	) {
+		this._format = '1080p25'
+	}
+
+	get format (): string {
+		return this._format
+	}
+	set format (newFormat: string) {
+		if (newFormat.match(/^\d{3,4}[ip]\d{2,3}$/)) {
+			this._format = newFormat
+		} else {
+			throw new Error(`Invalid format: ${newFormat}`)
+		}
+	}
 }

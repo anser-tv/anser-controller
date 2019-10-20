@@ -1,13 +1,39 @@
-import { ConfigType, SampleFunction, VideoIOType } from '../function/description'
+import { ConfigType, FunctionDescription, VideoIO, VideoIOType } from '../function/description'
 import { Job, TargetType } from '../job/job'
+
+const sampleInput = new VideoIO('Input', 'input', VideoIOType.RTMP)
+sampleInput.format = '1080i50'
+const sampleOutput = new VideoIO('Output', 'output', VideoIOType.RTMP)
+sampleOutput.format = '1080i50'
+
+const SAMPLE_FUNCTION: FunctionDescription = {
+	author: 'Tom Lee',
+	config: [
+		{
+			id: 'videoCodec',
+			name: 'Video Codec',
+			type: ConfigType.STRING
+		}
+	],
+	inputs: [
+		sampleInput
+	],
+	mainFile: 'main.js',
+	name: 'Sample Function',
+	outputs: [
+		sampleOutput
+	],
+	version: '1.0.0'
+}
 
 describe('Job', () => {
 	it('Never can run', () => {
 		const job = new Job(
 			TargetType.WORKER,
 			'test-worker',
-			SampleFunction.config,
-			SampleFunction.inputs,SampleFunction.outputs
+			SAMPLE_FUNCTION.config,
+			SAMPLE_FUNCTION.inputs,
+			SAMPLE_FUNCTION.outputs
 		)
 		return job.CanRun().then((result) => expect(result).toBe(false))
 	})
@@ -16,8 +42,9 @@ describe('Job', () => {
 		const job = new Job(
 			TargetType.WORKER,
 			'test-worker',
-			SampleFunction.config,
-			SampleFunction.inputs,SampleFunction.outputs
+			SAMPLE_FUNCTION.config,
+			SAMPLE_FUNCTION.inputs,
+			SAMPLE_FUNCTION.outputs
 		)
 		return job.Run().then((result) => expect(result).toEqual(false))
 	})
@@ -26,8 +53,9 @@ describe('Job', () => {
 		const job = new Job(
 			TargetType.WORKER,
 			'test-worker',
-			SampleFunction.config,
-			SampleFunction.inputs,SampleFunction.outputs
+			SAMPLE_FUNCTION.config,
+			SAMPLE_FUNCTION.inputs,
+			SAMPLE_FUNCTION.outputs
 		)
 		return job.Stop().then((result) => expect(result).toEqual(false))
 	})
@@ -36,8 +64,9 @@ describe('Job', () => {
 		const job = new Job(
 			TargetType.WORKER,
 			'test-worker',
-			SampleFunction.config,
-			SampleFunction.inputs,SampleFunction.outputs
+			SAMPLE_FUNCTION.config,
+			SAMPLE_FUNCTION.inputs,
+			SAMPLE_FUNCTION.outputs
 		)
 		expect((job as any).getConfigById('videoCodec')).toEqual({
 			id: 'videoCodec',
@@ -50,27 +79,29 @@ describe('Job', () => {
 		const job = new Job(
 			TargetType.WORKER,
 			'test-worker',
-			SampleFunction.config,
-			SampleFunction.inputs,SampleFunction.outputs
+			SAMPLE_FUNCTION.config,
+			SAMPLE_FUNCTION.inputs,
+			SAMPLE_FUNCTION.outputs
 		)
-		expect((job as any).getInputById('input')).toEqual({
-			id: 'input',
-			name: 'Input',
-			type: VideoIOType.RTMP
-		})
+		const result = (job as any).getInputById('input')
+		expect(result.format === '1080i50')
+		expect(result.id === 'input')
+		expect(result.name === 'Input')
+		expect(result.type === VideoIOType.RTMP)
 	})
 
 	it('Finds output by Id', () => {
 		const job = new Job(
 			TargetType.WORKER,
 			'test-worker',
-			SampleFunction.config,
-			SampleFunction.inputs,SampleFunction.outputs
+			SAMPLE_FUNCTION.config,
+			SAMPLE_FUNCTION.inputs,
+			SAMPLE_FUNCTION.outputs
 		)
-		expect((job as any).getOutputById('output')).toEqual({
-			id: 'output',
-			name: 'Output',
-			type: VideoIOType.RTMP
-		})
+		const result: VideoIO = (job as any).getOutputById('output')
+		expect(result.format === '1080i50')
+		expect(result.id === 'output')
+		expect(result.name === 'Output')
+		expect(result.type === VideoIOType.RTMP)
 	})
 })

@@ -1,4 +1,4 @@
-import { FunctionConfig, FunctionInput, FunctionOutput } from '../function/description'
+import { FunctionConfig, VideoIO } from '../function/description'
 
 export enum TargetType {
 	WORKER = 'WORKER',
@@ -13,8 +13,8 @@ export class Job {
 		public targetType: TargetType,
 		public target: string,
 		public config: FunctionConfig[],
-		public inputs: FunctionInput[],
-		public outputs: FunctionOutput[]
+		public inputs: VideoIO[],
+		public outputs: VideoIO[]
 	) { }
 
 	/**
@@ -45,11 +45,11 @@ export class Job {
 		return this.config.find((config) => config.id === id)
 	}
 
-	private getInputById (id: string): FunctionInput | undefined {
+	private getInputById (id: string): VideoIO | undefined {
 		return this.inputs.find((input) => input.id === id)
 	}
 
-	private getOutputById (id: string): FunctionOutput | undefined {
+	private getOutputById (id: string): VideoIO | undefined {
 		return this.outputs.find((output) => output.id === id)
 	}
 }
