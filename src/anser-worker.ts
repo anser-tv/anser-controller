@@ -1,11 +1,8 @@
-import { throwStatement } from '@babel/types'
 import { Heartbeat, HeartbeatCommandType, HeartbeatDataSystemInfo, HeartbeatResponse, SystemInfoData } from 'anser-types'
-import { sign } from 'crypto'
 import { get } from 'request-promise'
-import { fsSize, Systeminformation } from 'systeminformation'
+import { fsSize } from 'systeminformation'
 import { currentLoad } from 'systeminformation'
 import { mem } from 'systeminformation'
-import { diskLayout } from 'systeminformation'
 import { logger } from './logger/logger'
 
 const KEEPALIVE_INTERVAL = 1000
@@ -36,6 +33,7 @@ export class AnserWorker {
 	 */
 	public Start (): void {
 		this._running = true
+		logger.info(`Worker ${this.id} started`)
 		this.keepAlive()
 	}
 
