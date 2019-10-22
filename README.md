@@ -6,4 +6,4 @@ This package contains the controller for the Anser video pipeline manager.
 
 ## How to use (dev)
 
-`yarn && yarn build`
+`yarn && yarn watch`
