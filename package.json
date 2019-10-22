@@ -18,6 +18,7 @@
     "@types/jest": "^24.0.15",
     "@types/node": "^12.6.8",
     "@types/request-promise": "^4.1.44",
+    "@types/systeminformation": "^3.23.1",
     "eslint": "^6.1.0",
     "eslint-plugin-import": "^2.18.2",
     "jest": "^24.8.0",
@@ -35,6 +36,7 @@
     "anser-types": "git+https://github.com/anser-tv/anser-types.git",
     "express": "^4.17.1",
     "request-promise": "^4.2.4",
+    "systeminformation": "^4.14.16",
     "winston": "^3.2.1"
   },
   "nodemonConfig": {
