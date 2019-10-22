@@ -39,5 +39,6 @@
     ],
     "exec": "yarn test",
     "ext": "ts"
-  }
+  },
+  "dependencies": {}
 }
