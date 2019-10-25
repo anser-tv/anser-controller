@@ -8,13 +8,13 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn audit && yarn lint && yarn test && tsc",
-    "start": "node dist/index.js",
     "buildstart": "yarn build && yarn start",
-    "postinstall": "yarn install-recursive",
+    "install-recursive": "yarn-recursive --skipRoot",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
+    "postinstall": "yarn install-recursive",
+    "start": "node dist/index.js",
     "test": "yarn lint && jest --passWithNoTests --runInBand",
-    "watch": "nodemon",
-    "install-recursive": "yarn-recursive --skipRoot"
+    "watch": "nodemon"
   },
   "devDependencies": {
     "@types/jest": "^24.0.15",
