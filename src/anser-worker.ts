@@ -46,7 +46,6 @@ export class AnserWorker {
 			`${this._protocol}://${this.controller}/api/${API_VERSION}/heartbeat/${this.id}`,
 			{ body: this._nextHeartbeat, json: true, resolveWithFullResponse: true }
 		).then((data: HeartbeatResponse) => {
-			logger.info(JSON.stringify(data))
 			if (!this._connected) {
 				logger.info(`Connected to controller`)
 			}
