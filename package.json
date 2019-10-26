@@ -52,7 +52,7 @@
     "watch": [
       "src"
     ],
-    "exec": "yarn lint && tsc && DEBUG=true node dist/index.js",
+    "exec": "yarn lint && tsc && DEV=true node dist/index.js",
     "ext": "ts"
   }
 }

@@ -1,11 +1,12 @@
 import { Heartbeat, HeartbeatCommandType, HeartbeatDataSystemInfo, HeartbeatResponse, SystemInfoData } from 'anser-types'
-import { get } from 'request-promise'
+import { post } from 'request-promise'
 import { fsSize } from 'systeminformation'
 import { currentLoad } from 'systeminformation'
 import { mem } from 'systeminformation'
 import { logger } from './logger/logger'
 
 const KEEPALIVE_INTERVAL = 1000
+const API_VERSION = 'v1.0'
 
 /**
  * Represents a worker.
@@ -38,17 +39,29 @@ export class AnserWorker {
 	}
 
 	/* istanbul ignore next */
-	private keepAlive (): void { // TODO: Send heartbeat
-		get(`${this._protocol}://${this.controller}/heartbeat/${this.id}`).then((data: HeartbeatResponse) => {
+	private keepAlive (): void {
+		logger.info(`Sending heartbeat to ${this._protocol}://${this.controller}/heartbeat/${this.id}`)
+		this._nextHeartbeat.time = new Date()
+		post(
+			`${this._protocol}://${this.controller}/api/${API_VERSION}/heartbeat/${this.id}`,
+			{ body: this._nextHeartbeat, json: true, resolveWithFullResponse: true }
+		).then((data: HeartbeatResponse) => {
+			logger.info(JSON.stringify(data))
 			if (!this._connected) {
 				logger.info(`Connected to controller`)
 			}
 			this._connected = true
-			this.processHeartbeatResponse(data)
-		}).catch((err) => {
+			this.resetHeartbeat()
+			if (data) {
+				this.processHeartbeatResponse(data).catch((err) => {
+					if (err) throw err
+				})
+			}
+		}).catch ( (err) => {
 			if (this._connected) {
 				logger.info(`Disconnected from controller! ${err}`)
 			}
+			logger.error(err.message)
 			this._connected = false
 		})
 
@@ -62,6 +75,7 @@ export class AnserWorker {
 			const actions = resp.commands.map(async (command) => {
 				switch(command.type) {
 					case HeartbeatCommandType.SendSystemInfo:
+						logger.info(`Received command: SendSystemInfo`)
 						const data: HeartbeatDataSystemInfo = {
 							command: HeartbeatCommandType.SendSystemInfo,
 							data: await this.getSystemInfo()
@@ -99,5 +113,10 @@ export class AnserWorker {
 			ram_available: memData.total,
 			ram_used: memData.used
 		}
+	}
+
+	/* istanbul ignore next */
+	private resetHeartbeat (): void {
+		this._nextHeartbeat = { time: new Date(), data: [] }
 	}
 }
