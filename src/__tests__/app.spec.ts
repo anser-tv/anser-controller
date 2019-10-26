@@ -91,8 +91,19 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 		const app = new App('src/__tests__/mocks/auth_keys.txt')
 		const res1 = await supertest(app.app)
 			.post(`/api/${API_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+		heartbeat.data = [{
+			command: HeartbeatCommandType.SendSystemInfo,
+			data: {
+				cpu_usage_percent: 50,
+				disk_capacity: 50,
+				disk_usage: 45,
+				ram_available: 40,
+				ram_used: 35
+			}
+		}]
 		const res2 = await supertest(app.app)
 			.post(`/api/${API_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+		app.Close()
 		expect(res1.status).toEqual(200)
 		expect(res1.body).toEqual([{
 			type: HeartbeatCommandType.SendSystemInfo
@@ -100,6 +111,29 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 
 		expect(res2.status).toEqual(200)
 		expect(res2.body).toEqual({ })
+	})
+
+	it('Requests system info if previous was invalid', async () => {
+		const heartbeat: any = {
+			data: [],
+			time: new Date()
+		}
+		const app = new App('src/__tests__/mocks/auth_keys.txt')
+		const res1 = await supertest(app.app)
+			.post(`/api/${API_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+		heartbeat.data = [{
+			command: HeartbeatCommandType.SendSystemInfo,
+			data: { }
+		}]
+		const res2 = await supertest(app.app)
+		.post(`/api/${API_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
 		app.Close()
+		expect(res1.status).toEqual(200)
+		expect(res1.body).toEqual([{
+			type: HeartbeatCommandType.SendSystemInfo
+		}])
+
+		expect(res2.status).toEqual(200)
+		expect(res2.body).toEqual([{ type: HeartbeatCommandType.SendSystemInfo}])
 	})
 })
