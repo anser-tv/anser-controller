@@ -8,7 +8,7 @@ import { State } from './state'
 
 export const API_VERSION = 'v1.0'
 
-const DEBUG = process.env.DEBUG || false
+const DEV = process.env.DEV || false
 const PORT = process.env.PORT || 5000
 
 /**
@@ -40,7 +40,7 @@ export class App {
 		this.server.listen(PORT)
 		logger.info(`App is running on https://127.0.0.1:${PORT}`)
 		/* istanbul ignore next*/
-		if (DEBUG) {
+		if (DEV) {
 			this.serverDevelop = http.createServer(this.app)
 			this.serverDevelop.listen((PORT as number) + 1)
 			logger.warn(`App is serving over HTTP at http://127.0.0.1:${(PORT as number) + 1}. This is STRONGLY discouraged for deployment.`)
@@ -66,7 +66,7 @@ export class App {
 
 	private isAuthenticated (req: express.Request): boolean {
 		/* istanbul ignore next */
-		if (DEBUG) {
+		if (DEV) {
 			return true
 		}
 
