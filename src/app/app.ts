@@ -82,8 +82,7 @@ export class App {
 	}
 
 	private denyAccess (res: express.Response): void {
-		res.statusMessage = 'Access Denied'
-		res.status(401).end()
+		res.status(401).send('Access Denied')
 		LogResponse ('Access Denied', logger)
 	}
 
@@ -99,9 +98,8 @@ export class App {
 	}
 
 	private sendBadRequest (res: express.Response, message: string): void {
-		LogResponse('400 Bad Request', logger)
-		res.statusMessage = message
-		res.status(400).end()
+		LogResponse(`400 Bad Request: ${message}`, logger)
+		res.status(400).send(message)
 	}
 
 	private setupBindings (): void {
@@ -133,8 +131,7 @@ export class App {
 			`/api/${API_VERSION}/workers`,
 			(req: express.Request, res: express.Response) => {
 				LogResponse('Not implemented', logger)
-				res.statusMessage = 'Not implemented'
-				res.status(501).end()
+				res.status(501).send('Not implemented')
 			}
 		)
 
@@ -145,8 +142,7 @@ export class App {
 			`/api/${API_VERSION}/workers/status/:status`,
 			(req: express.Request, res: express.Response) => {
 				LogResponse('Not implemented', logger)
-				res.statusMessage = 'Not implemented'
-				res.status(501).end()
+				res.status(501).send('Not implemented')
 			}
 		)
 
@@ -157,8 +153,7 @@ export class App {
 			`/api/${API_VERSION}/heartbeat/:workerId`,
 			(req: express.Request, res: express.Response) => {
 				LogResponse('Not implemented', logger)
-				res.statusMessage = 'Not implemented'
-				res.status(501).end()
+				res.status(501).send('Not implemented')
 			}
 		)
 
@@ -174,15 +169,19 @@ export class App {
 				const body = req.body
 				if (!BodyIsHeartbeat(body)) {
 					const heartbeatExample: Heartbeat = {
+						data: [],
 						time: new Date()
 					}
 					this.sendBadRequest(res, `Heartbeat must be in the form: ${JSON.stringify(heartbeatExample)}`)
+				} else {
+					const result = this.state.AddHeartbeat(req.params.workerId, body as Heartbeat)
+
+					if (result.commands && result.commands.length) {
+						res.send(result.commands)
+					} else {
+						res.status(200).end()
+					}
 				}
-
-				const result = this.state.AddHeartbeat(req.params.workerId, body as Heartbeat)
-
-				if (result.commands && result.commands.length) res.send(result.commands)
-				res.status(200).end()
 			}
 		)
 	}

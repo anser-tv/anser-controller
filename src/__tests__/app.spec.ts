@@ -73,6 +73,7 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 
 	it('Accepts a valid request body', async () => {
 		const heartbeat: Heartbeat = {
+			data: [],
 			time: new Date()
 		}
 		const res = await postToApp(`/api/${API_VERSION}/heartbeat/test-worker`, 'Hello', heartbeat)
@@ -84,6 +85,7 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 
 	it('Requests system info only once', async () => {
 		const heartbeat: Heartbeat = {
+			data: [],
 			time: new Date()
 		}
 		const app = new App('src/__tests__/mocks/auth_keys.txt')
