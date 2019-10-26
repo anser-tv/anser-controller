@@ -2,7 +2,7 @@ import { HeartbeatCommand, HeartbeatCommandType } from './heartbeat-commands/hea
 
 export interface Heartbeat {
 	time: Date,
-	data?: HeartbeatDataAny[]
+	data: HeartbeatDataAny[]
 }
 
 interface HeartbeatDataBase {
@@ -31,6 +31,7 @@ export interface HeartbeatResponse {
 
 export function BodyIsHeartbeat (body: any): boolean {
 	const template: Heartbeat = {
+		data: [],
 		time: new Date()
 	}
 
