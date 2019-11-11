@@ -21,10 +21,10 @@
     "eslint-plugin-import": "^2.18.2",
     "jest": "^24.8.0",
     "nodemon": "^1.19.1",
-    "ts-jest": "^24.0.2",
-    "ts-node": "^8.3.0",
-    "tslint": "^5.18.0",
-    "typescript": "^3.5.3",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8.5.0",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.2",
     "yarn": "^1.19.1"
   },
   "nodemonConfig": {
