@@ -6,22 +6,37 @@ import {
 	HeartbeatResponse,
 	SystemInfoData
 } from 'anser-types'
+import { logger } from '../logger/logger'
 
 const SYSTEM_INFO_REQUEST_PERIOD = 60 * 1000 // Every minute
+const STATE_MANAGEMENT_INTERVAL = 1000 // Every second
+const DISCONNECT_TIME = 5000 // Five seconds
+
+export enum WorkerStatus {
+	ONLINE = 'ONLINE',
+	OFFLINE = 'OFFLINE'
+}
 
 /**
  * Stores the state of the controller.
  */
 export class State {
-	private _workersRegistered: string[]
+	private _workersRegistered: { [workerId: string]: WorkerStatus }
 	private _heartBeats: { [workerId: string]: Heartbeat[] }
 	private _lastHeartbeat: { [workerId: string]: Heartbeat }
 	private _systemInfo: { [workerId: string]: { lastReceived: Date, data: SystemInfoData } }
+	private _managementTimer: NodeJS.Timer
+
 	constructor () {
-		this._workersRegistered = []
+		this._workersRegistered = { }
 		this._heartBeats = { }
 		this._lastHeartbeat = { }
 		this._systemInfo = { }
+		/* istanbul ignore next */
+		this._managementTimer = setInterval(() => {
+			/* istanbul ignore next */
+			this.manageState()
+		}, STATE_MANAGEMENT_INTERVAL).unref()
 	}
 
 	/**
@@ -30,9 +45,15 @@ export class State {
 	 * @param heartbeat Heartbeat to add
 	 */
 	public AddHeartbeat (workerId: string, heartbeat: Heartbeat): HeartbeatResponse {
-		if (this._workersRegistered.indexOf(workerId) === -1) {
-			this._workersRegistered.push(workerId)
+		if (Object.keys(this._workersRegistered).indexOf(workerId) === -1) {
 			this._heartBeats[workerId] = []
+			this._workersRegistered[workerId] = WorkerStatus.ONLINE
+			logger.info(`Worker ${workerId} connected`)
+		} else {
+			if (this._workersRegistered[workerId] === WorkerStatus.OFFLINE) {
+				this._workersRegistered[workerId] = WorkerStatus.ONLINE
+				logger.info(`Worker ${workerId} reconnected`)
+			}
 		}
 		this._heartBeats[workerId].push(heartbeat)
 		this._lastHeartbeat[workerId] = heartbeat
@@ -83,5 +104,16 @@ export class State {
 		}
 
 		return Object.keys(data).sort().toString() === Object.keys(exampleCommand).sort().toString()
+	}
+
+	private manageState (): void {
+		Object.keys(this._lastHeartbeat).forEach((workerId) => {
+			if (this._workersRegistered[workerId] === WorkerStatus.ONLINE) {
+				if (Date.now() - new Date(this._lastHeartbeat[workerId].time).getTime() >= DISCONNECT_TIME) {
+					this._workersRegistered[workerId] = WorkerStatus.OFFLINE
+					logger.info(`Worker ${workerId} disconnected. Last seen: ${this._lastHeartbeat[workerId].time}`)
+				}
+			}
+		})
 	}
 }

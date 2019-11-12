@@ -9,6 +9,7 @@
   "scripts": {
     "build": "yarn audit && yarn lint && yarn test && tsc",
     "buildstart": "yarn build && yarn start",
+    "buildstart:dev": "yarn build && DEV=1 yarn start",
     "install-recursive": "yarn-recursive --skipRoot",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
     "postinstall": "yarn install-recursive",
