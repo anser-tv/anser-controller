@@ -78,6 +78,20 @@ describe('RequestSystemInfo', () => {
 		expect((state as any).isValidSystemInfoData(systemInfoData)).toBe(false)
 	})
 
+	it('Starts manager', () => {
+		const state = new State()
+		state.StartManager()
+		expect((state as any)._runManager).toBe(true)
+		state.StopManager()
+	})
+
+	it('Stops manager', () => {
+		const state = new State()
+		state.StartManager()
+		state.StopManager()
+		expect((state as any)._runManager).toBe(false)
+	})
+
 	it('Detects disconnected worker', () => {
 		const state = new State();
 		(state as any)._lastHeartbeat['dev-worker'] = {

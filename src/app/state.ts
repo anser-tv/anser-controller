@@ -25,18 +25,28 @@ export class State {
 	private _heartBeats: { [workerId: string]: Heartbeat[] }
 	private _lastHeartbeat: { [workerId: string]: Heartbeat }
 	private _systemInfo: { [workerId: string]: { lastReceived: Date, data: SystemInfoData } }
-	private _managementTimer: NodeJS.Timer
+	private _runManager: boolean = false
 
 	constructor () {
 		this._workersRegistered = { }
 		this._heartBeats = { }
 		this._lastHeartbeat = { }
 		this._systemInfo = { }
-		/* istanbul ignore next */
-		this._managementTimer = setInterval(() => {
-			/* istanbul ignore next */
-			this.manageState()
-		}, STATE_MANAGEMENT_INTERVAL).unref()
+	}
+
+	/**
+	 * Starts managing the state.
+	 */
+	public StartManager (): void {
+		this._runManager = true
+		this.manageState()
+	}
+
+	/**
+	 * Stops managing the state.
+	 */
+	public StopManager (): void {
+		this._runManager = false
 	}
 
 	/**
@@ -115,5 +125,10 @@ export class State {
 				}
 			}
 		})
+
+		/* istanbul ignore next */
+		if(this._runManager) {
+			setTimeout(() => this.manageState(), STATE_MANAGEMENT_INTERVAL)
+		}
 	}
 }
