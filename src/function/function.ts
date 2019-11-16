@@ -25,15 +25,33 @@ export abstract class AnserFunction implements FunctionDescription {
 	}
 
 	/** Returns true if it is possible for this function to be run on a particular worker. */
-	public abstract async CanRun (): Promise<boolean>
+	public async CanRun (): Promise<boolean> {
+		if (this.Validate()) {
+			return Promise.resolve(true)
+		}
+
+		return Promise.resolve(false)
+	}
 	/** Starts this function. */
-	public abstract async Start (): Promise<boolean>
+	public async Start (): Promise<boolean> {
+		if (this.Validate()) {
+			return this.start()
+		}
+
+		return Promise.resolve(false)
+	}
 	/** Stops this function. */
 	public abstract async Stop (): Promise<boolean>
 	/** Restarts this function. */
 	public async Restart (): Promise<boolean> {
 		await this.Stop()
-		await this.Start()
-		return Promise.resolve(true)
+		const started = await this.Start()
+		return Promise.resolve(started)
 	}
+	/** Validates function config. */
+	public abstract Validate (): boolean
+	/** Function start implementation. */
+	protected abstract start (): Promise<boolean>
+	/** Checks on whether function can run. */
+	protected abstract canRun (): Promise<boolean>
 }
