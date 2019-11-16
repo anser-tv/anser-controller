@@ -10,7 +10,8 @@ module.exports = {
 		"**/*.ts",
 		"!src/__tests__/**",
 		"!src/server.ts",
-		"!src/index.ts"
+		"!src/index.ts",
+		"!src/function/function.ts"
 	],
 	coverageThreshold: {
 		global: {
