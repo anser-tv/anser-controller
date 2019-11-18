@@ -40,5 +40,7 @@
     "exec": "yarn test",
     "ext": "ts"
   },
-  "dependencies": {}
+  "dependencies": {
+    "winston": "^3.2.1"
+  }
 }
