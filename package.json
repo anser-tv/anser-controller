@@ -1,0 +1,46 @@
+{
+  "name": "anser-function-stream-video-from-file",
+  "version": "1.0.0",
+  "description": "Anser function to stream video from a file",
+  "main": "index.js",
+  "author": "Tom Lee",
+  "license": "MIT",
+  "scripts": {
+    "build": "yarn audit && yarn lint && yarn test && tsc",
+    "buildstart": "yarn build && yarn start",
+    "buildstart:dev": "tsc && DEV=1 yarn start",
+    "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
+    "start": "node dist/index.js",
+    "test": "yarn lint && jest --passWithNoTests --runInBand",
+    "watch": "nodemon"
+  },
+  "devDependencies": {
+    "@types/jest": "22.2.3",
+    "@types/node": "12.12.2",
+    "eslint": "6.6.0",
+    "eslint-plugin-import": "2.18.2",
+    "jest": "24.9.0",
+    "nodemon": "1.19.4",
+    "ts-jest": "24.1.0",
+    "tslint": "5.20.1",
+    "typescript": "3.7.2",
+    "yarn": "1.19.1"
+  },
+  "dependencies": {
+    "anser-types": "git+https://github.com/anser-tv/anser-types.git#master",
+    "winston": "3.2.1"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "**/*.test.ts",
+      "**/*.spec.ts",
+      ".git",
+      "node_modules"
+    ],
+    "watch": [
+      "src"
+    ],
+    "exec": "yarn lint && tsc && DEV=true node dist/index.js",
+    "ext": "ts"
+  }
+}
