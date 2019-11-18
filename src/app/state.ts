@@ -4,9 +4,9 @@ import {
 	HeartbeatCommandSendSystemInfo,
 	HeartbeatCommandType,
 	HeartbeatResponse,
+	logger,
 	SystemInfoData
 } from 'anser-types'
-import { logger } from '../logger/logger'
 
 const SYSTEM_INFO_REQUEST_PERIOD = 60 * 1000 // Every minute
 const STATE_MANAGEMENT_INTERVAL = 1000 // Every second

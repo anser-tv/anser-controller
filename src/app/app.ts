@@ -1,9 +1,9 @@
-import { BodyIsHeartbeat, Heartbeat } from 'anser-types'
+import { BodyIsHeartbeat, Heartbeat, logger } from 'anser-types'
 import express from 'express'
 import http from 'http'
 import https from 'https'
 import { Auth } from '../auth/auth'
-import { logger, LogRequest, LogResponse } from '../logger/logger'
+import { LogRequest, LogResponse } from '../logger/logger'
 import { State } from './state'
 
 export const API_VERSION = 'v1.0'

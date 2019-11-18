@@ -511,9 +511,11 @@ ajv@^6.10.0, ajv@^6.10.2, ajv@^6.5.5:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-"anser-types@git+https://github.com/anser-tv/anser-types.git":
+"anser-types@git+https://github.com/anser-tv/anser-types.git#master":
   version "1.0.0"
-  resolved "git+https://github.com/anser-tv/anser-types.git#8cc383908770d53c075f34888b6b9bc4c8afa1d4"
+  resolved "git+https://github.com/anser-tv/anser-types.git#b9490cf519a34b9f51831984e73f83a6a8d29105"
+  dependencies:
+    winston "^3.2.1"
 
 ansi-align@^2.0.0:
   version "2.0.0"
