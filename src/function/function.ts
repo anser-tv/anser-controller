@@ -32,7 +32,7 @@ export abstract class AnserFunction implements FunctionDescription {
 	/** Returns true if it is possible for this function to be run on a particular worker. */
 	public async CanRun (): Promise<boolean> {
 		if (this.Validate()) {
-			return Promise.resolve(true)
+			return this.canRun()
 		}
 
 		return Promise.resolve(false)
