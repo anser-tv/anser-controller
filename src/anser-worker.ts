@@ -1,9 +1,8 @@
-import { Heartbeat, HeartbeatCommandType, HeartbeatDataSystemInfo, HeartbeatResponse, SystemInfoData } from 'anser-types'
+import { Heartbeat, HeartbeatCommandType, HeartbeatDataSystemInfo, HeartbeatResponse, logger, SystemInfoData } from 'anser-types'
 import { post } from 'request-promise'
 import { fsSize } from 'systeminformation'
 import { currentLoad } from 'systeminformation'
 import { mem } from 'systeminformation'
-import { logger } from './logger/logger'
 
 const KEEPALIVE_INTERVAL = 1000
 const API_VERSION = 'v1.0'
