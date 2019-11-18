@@ -1,3 +1,5 @@
+import winston = require('winston')
+import { logger as anserlog } from '../logger/logger'
 import { FunctionConfig, FunctionDescription, VideoIO } from './description'
 
 export enum FunctionStatus {
@@ -19,9 +21,12 @@ export abstract class AnserFunction implements FunctionDescription {
 		public config: FunctionConfig[],
 		public inputs: VideoIO[],
 		public outputs: VideoIO[],
-		public status: FunctionStatus = FunctionStatus.NOTUSED
+		public status: FunctionStatus = FunctionStatus.NOTUSED,
+		public logger?: winston.Logger
 	) {
-
+		if (!logger) {
+			this.logger = anserlog
+		}
 	}
 
 	/** Returns true if it is possible for this function to be run on a particular worker. */
