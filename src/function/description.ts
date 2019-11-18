@@ -22,7 +22,8 @@ export interface FunctionDescription {
 export interface FunctionConfig {
 	name: string
 	id: string
-	type: ConfigType
+	type: ConfigType,
+	value?: string
 }
 
 /**
