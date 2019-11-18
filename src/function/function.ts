@@ -6,7 +6,8 @@ export enum FunctionStatus {
 	NOTUSED = 'NOTUSED', // Created but no action has been run
 	CHECKING = 'CHECKING', // Checking if can run
 	RUNNING = 'RUNNING',
-	STOPPED = 'STOPPED'
+	STOPPED = 'STOPPED',
+	ERROR = 'ERROR'
 }
 
 /**
