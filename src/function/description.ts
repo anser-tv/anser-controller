@@ -1,4 +1,5 @@
 export enum ConfigType {
+	UNKNOWN,
 	DROPDOWN,
 	STRING,
 	INTEGER,
@@ -6,6 +7,7 @@ export enum ConfigType {
 }
 
 export enum VideoIOType {
+	UNKNOWN,
 	RTMP
 }
 
@@ -13,6 +15,7 @@ export interface FunctionDescription {
 	name: string
 	author: string
 	version: string
+	targetVersion: string
 	mainFile: string
 	config: FunctionConfig[]
 	inputs: VideoIO[]
