@@ -25,6 +25,7 @@ const SAMPLE_FUNCTION: FunctionDescription = {
 	outputs: [
 		sampleOutput
 	],
+	targetVersion: 'v0.0',
 	version: '1.0.0'
 }
 
