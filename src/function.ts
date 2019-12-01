@@ -2,7 +2,7 @@ import { AnserFunction, FunctionConfig, FunctionStatus, VideoIO } from 'anser-ty
 import * as gstreamer from 'gstreamer-superficial'
 import winston = require('winston')
 
-export interface AnserFunctionGStreamerBaseConfig {
+export interface IAnserFunctionGStreamerBaseConfig {
 	pipeline: string
 }
 
@@ -18,7 +18,7 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 		public author: string,
 		public version: string,
 		public mainFile: string,
-		public config: AnserFunctionGStreamerBaseConfig,
+		public config: IAnserFunctionGStreamerBaseConfig,
 		public inputs: VideoIO[],
 		public outputs: VideoIO[],
 		public status: FunctionStatus = FunctionStatus.NOTUSED,
@@ -42,8 +42,6 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	 * Validates the function.
 	 */
 	public Validate (): boolean {
-		let pipelineFound = false
-		let pipelineValid = false
 		return !!this.config.pipeline
 	}
 
