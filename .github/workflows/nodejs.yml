@@ -19,6 +19,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: yarn install, build, and test
       run: |
+        npm install -g typescript@3.7.2
         yarn
         yarn test
         yarn build
