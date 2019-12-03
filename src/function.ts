@@ -1,4 +1,4 @@
-import { AnserFunction, FunctionConfig, FunctionStatus, VideoIO } from 'anser-types'
+import { AnserFunction, FunctionConfig, FunctionDescription, FunctionRunConfig, FunctionStatus, VideoIO } from 'anser-types'
 import * as gstreamer from 'gstreamer-superficial'
 import winston = require('winston')
 
@@ -14,17 +14,12 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	public pipelineString?: string
 
 	constructor (
-		public name: string,
-		public author: string,
-		public version: string,
-		public mainFile: string,
-		public config: IAnserFunctionGStreamerBaseConfig,
-		public inputs: VideoIO[],
-		public outputs: VideoIO[],
+		public description: FunctionDescription,
+		public config: FunctionRunConfig,
 		public status: FunctionStatus = FunctionStatus.NOTUSED,
 		public logger?: winston.Logger
 	) {
-		super(name, author, version, mainFile, config, inputs, outputs, status, logger)
+		super(description, config, status, logger)
 	}
 
 	/**
