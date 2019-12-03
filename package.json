@@ -15,16 +15,17 @@
     "watch": "nodemon"
   },
   "devDependencies": {
-    "@types/jest": "22.2.3",
-    "@types/node": "12.12.2",
-    "eslint": "6.6.0",
-    "eslint-plugin-import": "2.18.2",
-    "jest": "24.9.0",
-    "nodemon": "1.19.4",
-    "ts-jest": "24.1.0",
-    "tslint": "5.20.1",
-    "typescript": "3.7.2",
-    "yarn": "1.19.1"
+    "@types/jest": "^24.0.15",
+    "@types/node": "^12.6.8",
+    "eslint": "^6.6.0",
+    "eslint-plugin-import": "^2.18.2",
+    "jest": "^24.9.0",
+    "nodemon": "^1.19.4",
+    "ts-jest": "^24.1.0",
+    "ts-node": "^8.5.0",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.2",
+    "yarn": "^1.19.1"
   },
   "dependencies": {
     "anser-types": "git+https://github.com/anser-tv/anser-types.git#master",
