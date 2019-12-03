@@ -10,18 +10,15 @@ export enum FunctionStatus {
 	ERROR = 'ERROR'
 }
 
+export interface FunctionRunConfig { [key: string]: number | string | boolean }
+
 /**
  * Abstract implementation of Anser functions.
  */
-export abstract class AnserFunction implements FunctionDescription {
+export abstract class AnserFunction {
 	constructor (
-		public name: string,
-		public author: string,
-		public version: string,
-		public mainFile: string,
-		public config: FunctionConfig[],
-		public inputs: VideoIO[],
-		public outputs: VideoIO[],
+		public description: FunctionDescription,
+		public config: FunctionRunConfig,
 		public status: FunctionStatus = FunctionStatus.NOTUSED,
 		public logger?: winston.Logger
 	) {
