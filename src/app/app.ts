@@ -3,13 +3,14 @@ import express from 'express'
 import http from 'http'
 import https from 'https'
 import { Auth } from '../auth/auth'
+import { Config, ConfigLoader } from '../config'
 import { LogRequest, LogResponse } from '../logger/logger'
 import { State } from './state'
 
 export const API_VERSION = 'v1.0'
 
-const DEV = process.env.DEV || false
-const PORT = process.env.PORT || 5000
+const DEV = process.env.DEV ?? false
+const PORT = process.env.PORT ?? 5000
 
 /**
  * Handles all API requests.
@@ -20,8 +21,11 @@ export class App {
 	public server: http.Server
 	public serverDevelop?: http.Server
 	public state: State
-	constructor (authKeys: string) {
-		this.auth = new Auth(authKeys)
+	public config: Config
+
+	constructor (configDirectory?: string) {
+		this.config = new ConfigLoader(configDirectory ?? 'configs').config
+		this.auth = new Auth()
 		this.state = new State()
 		this.app = express()
 		this.app.use(express.json())
@@ -73,7 +77,7 @@ export class App {
 		const authKey = req.header('auth-key')
 
 		if (authKey) {
-			if (this.auth.IsAuthorised(authKey)) {
+			if (this.auth.IsAuthorised(authKey, this.config)) {
 				return true
 			}
 		}

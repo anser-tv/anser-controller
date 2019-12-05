@@ -5,14 +5,14 @@ import { App } from '../app/app'
 import { API_VERSION } from '../app/app'
 
 async function getFromApp (url: string, key: string): Promise<Response> {
-	const app = new App('src/__tests__/mocks/auth_keys.txt')
+	const app = new App('src/__tests__/__mocks__/config_a.json')
 	const res = await supertest(app.app).get(url).set('auth-key', key)
 	app.Close()
 	return Promise.resolve(res)
 }
 
 async function postToApp (url: string, key: string, body: any): Promise<Response> {
-	const app = new App('src/__tests__/mocks/auth_keys.txt')
+	const app = new App('src/__tests__/__mocks__/config_a.json')
 	const res = await supertest(app.app).post(url).set('auth-key', key).send(body)
 	app.Close()
 	return Promise.resolve(res)
@@ -20,7 +20,7 @@ async function postToApp (url: string, key: string, body: any): Promise<Response
 
 describe('Controller app: Is alive', () => {
 	it('Responds to GET /', async () => {
-		const app = new App('src/__tests__/mocks/auth_keys.txt')
+		const app = new App('src/__tests__/__mocks__/config_a.json')
 		const res = await supertest(app.app).get('/')
 		app.Close()
 		expect(res.status).toEqual(200)
@@ -88,7 +88,7 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 			data: [],
 			time: new Date()
 		}
-		const app = new App('src/__tests__/mocks/auth_keys.txt')
+		const app = new App('src/__tests__/__mocks__/config_a.json')
 		const res1 = await supertest(app.app)
 			.post(`/api/${API_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
 		heartbeat.data = [{
@@ -118,7 +118,7 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 			data: [],
 			time: new Date()
 		}
-		const app = new App('src/__tests__/mocks/auth_keys.txt')
+		const app = new App('src/__tests__/__mocks__/config_a.json')
 		const res1 = await supertest(app.app)
 			.post(`/api/${API_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
 		heartbeat.data = [{
