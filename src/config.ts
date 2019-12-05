@@ -1,7 +1,8 @@
 import fs from 'fs'
 export interface Config {
 	id: string,
-	controller: string
+	controller: string,
+	functionsDirectory?: string
 }
 
 /**
@@ -15,6 +16,7 @@ export class ConfigLoader {
 		const conf = JSON.parse(data)
 		if (this.isValidConfig(conf)) {
 			conf.controller = conf.controller.replace(/^https?:\/\//, '')
+			conf.functionsDirectory = conf.functionsDirectory ? conf.functionsDirectory : 'functions'
 			this.config = conf
 		} else {
 			throw Error(`Invalid config: ${file}`)
@@ -22,10 +24,7 @@ export class ConfigLoader {
 	}
 
 	private isValidConfig (config: any): boolean {
-		const template: Config = {
-			controller: '',
-			id: ''
-		}
-		return Object.keys(config).sort().toString() === Object.keys(template).sort().toString()
+		const keys = Object.keys(config)
+		return keys.indexOf('controller') !== -1 && keys.indexOf('id') !== -1
 	}
 }
