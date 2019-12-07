@@ -20,27 +20,27 @@ export interface ConfigPackageVideoIO {
 }
 
 export interface FunctionPackageFile {
-	name?: string
-	version?: string
-	mainFile?: string
-	anser?: {
-		targetVersion?: string
-		description?: {
-			name?: string
-			author?: string
-			version?: string
-			config?: ConfigPackageFile[]
-			inputs?: ConfigPackageVideoIO[]
-			outputs?: ConfigPackageVideoIO[]
+	anser?: [
+		{
+			description?: {
+				targetVersion?: string
+				name?: string
+				author?: string
+				version?: string
+				config?: ConfigPackageFile[]
+				inputs?: ConfigPackageVideoIO[]
+				outputs?: ConfigPackageVideoIO[],
+				mainFile?: string
+			}
 		}
-	}
+	]
 }
 
 /**
  * Loads all functions available to a controller / worker.
  */
 export class FunctionLoader {
-	public loadedFunctions: { [id: string]: FunctionDescription } = { } // id: FUNCTION_NAME:AUTHOR:HASH
+	public loadedFunctions: { [id: string]: FunctionDescription } = { } // id: PACKAGE_NAME:FUNCTION_NAME:AUTHOR:HASH
 	private logger: winston.Logger
 	private packageName: string
 	constructor (
@@ -81,10 +81,12 @@ export class FunctionLoader {
 				if (file.dependencies && Object.keys(file.dependencies).length) {
 					Object.keys(file.dependencies).forEach((key) => {
 						this.logger.info(`Loading function: ${key}`)
-						const func = this.loadFunctionFromFile(path.join(this.functionDirectory, 'node_modules', key, this.packageName))
-						if (func && this.isCompatible(func.targetVersion)) {
-							this.loadedFunctions[`${func.name.toUpperCase().replace(/[ -]/g, '_')}:${func.author.toUpperCase().replace(/[ -]/g, '_')}:${crypto.createHash('md5').update(JSON.stringify(func)).digest('hex')}`] = func
-						}
+						const funcs = this.loadFunctionsFromFile(
+							path.join(this.functionDirectory, 'node_modules', key, this.packageName), key
+						)
+						funcs?.forEach((f) => {
+							this.loadedFunctions[`${key.toUpperCase().replace(/[ -]/g, '_')}:${f.name.toUpperCase().replace(/[ -]/g, '_')}:${f.author.toUpperCase().replace(/[ -]/g, '_')}:${crypto.createHash('md5').update(JSON.stringify(f)).digest('hex')}`] = f
+						})
 					})
 				} else {
 					this.logger.info(`No functions found`)
@@ -102,56 +104,76 @@ export class FunctionLoader {
 		return this.loadedFunctions
 	}
 
-	private loadFunctionFromFile (directory: string): FunctionDescription | undefined {
-		if (fs.existsSync(directory)) {
-			const file: FunctionPackageFile = JSON.parse(fs.readFileSync(directory).toString('utf-8'))
+	private loadFunctionsFromFile (functionPath: string, fileName: string): FunctionDescription[] | undefined {
+		if (fs.existsSync(functionPath)) {
+			const file: FunctionPackageFile = JSON.parse(fs.readFileSync(functionPath).toString('utf-8'))
 			if (this.validateFile(file)) {
-				return this.parseFromFile(file)
+				return this.parseFromFile(file, fileName)
 			}
 		}
 	}
 
-	private parseFromFile (file: FunctionPackageFile): FunctionDescription {
-		const name = file.name?.toString() || ''
-		const version = file.version?.toString() || ''
-		const targetVersion = file.anser?.targetVersion?.toString() || ''
-		const author = file.anser?.description?.author?.toString() || ''
-		const mainFile = file.mainFile?.toString() || ''
-		const config: FunctionConfig[] = []
-		let inputs: VideoIO[] = []
-		let outputs: VideoIO[] = []
+	private parseFromFile (file: FunctionPackageFile, fileName: string): FunctionDescription[] {
+		const descriptions: FunctionDescription[] = []
+		const packageName = fileName
 
-		file.anser?.description?.config?.forEach((conf) => {
-			if (conf.type?.length) {
-				const newConf: FunctionConfig = {
-					id: conf.id?.toString() || '',
-					name: conf.name?.toString() || '',
-					type: this.parseConfigType(conf.type)
+		if (file.anser && file.anser.length) {
+			file.anser.forEach((a) => {
+				const name = a.description?.name?.toString() || ''
+				const version = a.description?.version?.toString() || ''
+				const targetVersion = a.description?.targetVersion?.toString() || ''
+				const author = a.description?.author?.toString() || ''
+				const mainFile = a.description?.mainFile?.toString() || ''
+				const config: FunctionConfig[] = []
+				let inputs: VideoIO[] = []
+				let outputs: VideoIO[] = []
+
+				a.description?.config?.forEach((conf) => {
+					if (conf.type) {
+						const newConf: FunctionConfig = {
+							id: conf.id?.toString() || '',
+							name: conf.name?.toString() || '',
+							type: this.parseConfigType(conf.type)
+						}
+						if (newConf.id.length && newConf.name.length && newConf.type !== ConfigType.UNKNOWN) {
+							config.push(newConf)
+						}
+					}
+				})
+
+				a.description?.inputs?.forEach((inp) => {
+					inputs = this.parseVideoIO(inp)
+				})
+
+				a.description?.outputs?.forEach((out) => {
+					outputs = this.parseVideoIO(out)
+				})
+
+				if (
+					(inputs.length || outputs.length) &&
+					author.length &&
+					mainFile.length &&
+					name.length &&
+					targetVersion.length &&
+					version.length && this.isCompatible(targetVersion)
+				) {
+					descriptions.push({
+						author,
+						config,
+						inputs,
+						mainFile,
+						name,
+						outputs,
+						packageName,
+						targetVersion,
+						version
+					})
 				}
-				if (newConf.id.length && newConf.name.length && newConf.type !== ConfigType.UNKNOWN) {
-					config.push(newConf)
-				}
-			}
-		})
+			})
 
-		file.anser?.description?.inputs?.forEach((inp) => {
-			inputs = this.parseVideoIO(inp)
-		})
-
-		file.anser?.description?.outputs?.forEach((out) => {
-			outputs = this.parseVideoIO(out)
-		})
-
-		return {
-			author,
-			config,
-			inputs,
-			mainFile,
-			name,
-			outputs,
-			targetVersion,
-			version
 		}
+
+		return descriptions
 	}
 
 	private parseVideoIO (io: ConfigPackageVideoIO): VideoIO[] {
@@ -212,17 +234,7 @@ export class FunctionLoader {
 	}
 
 	private validateFile (file: FunctionPackageFile): boolean {
-		return !!file.name &&
-			!!file.version &&
-			!!file.anser &&
-			!!file.anser.targetVersion &&
-			!!file.anser.description &&
-			!!file.anser.description.author &&
-			!!file.anser.description.config &&
-			!!file.anser.description.inputs &&
-			!!file.mainFile &&
-			!!file.anser.description.name &&
-			!!file.anser.description.version
+		return !!file.anser
 	}
 
 	/**

@@ -12,13 +12,23 @@ export enum VideoIOType {
 }
 
 export interface FunctionDescription {
+	/** Friendly (human readable) name */
 	name: string
+	/** Name of the package this function comes from */
+	packageName: string
+	/** Function author */
 	author: string
+	/** Function author */
 	version: string
+	/** Targeted Anser version */
 	targetVersion: string
+	/** Main file of function, for require(mainFile) */
 	mainFile: string
+	/** Config options of the function */
 	config: FunctionConfig[]
+	/** Video inputs */
 	inputs: VideoIO[]
+	/** Video outputs */
 	outputs: VideoIO[]
 }
 

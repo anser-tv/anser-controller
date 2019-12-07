@@ -1,6 +1,7 @@
-import { ConfigType, VideoIOType } from '../function/description'
-import { FunctionLoader } from '../function/loader'
+import { ConfigType, FunctionDescription, VideoIOType } from '../function/description'
+import { FunctionLoader, FunctionPackageFile } from '../function/loader'
 import { logger } from '../logger/logger'
+import { strict} from '../strict'
 
 describe('Function Loader', () => {
 	it ('Accepts compatible versions', () => {
@@ -16,7 +17,7 @@ describe('Function Loader', () => {
 	it ('Loads functions', () => {
 		const loader = new FunctionLoader('src/__tests__/__mocks__/validFunctions', 'v0.0', logger, 'description.json')
 		expect(loader.GetFunctions()).toEqual({
-			'ANSER_FUNCTION_TEST:TOM_LEE:5aa7ddcb4ee7466a4421b06da43ca4fe': {
+			'ANSER_FUNCTION_TEST:ANSER_TEST_FUNCTION:TOM_LEE:386467fcbe572a3555e17618431e094f': {
 				author: 'Tom Lee',
 				config: [
 					{
@@ -40,7 +41,7 @@ describe('Function Loader', () => {
 					}
 				],
 				mainFile: 'dist/index.js',
-				name: 'anser-function-test',
+				name: 'Anser Test Function',
 				outputs: [
 					{
 						_aspectRatio: '4:3',
@@ -50,8 +51,9 @@ describe('Function Loader', () => {
 						type: VideoIOType.RTMP
 					}
 				],
+				packageName: 'anser-function-test',
 				targetVersion: 'v0.0',
-				version: '1.0.0'
+				version: 'v1.0'
 
 			}
 		})
@@ -72,7 +74,7 @@ describe('Function Loader', () => {
 	it ('Rejects bad config values', () => {
 		const loader = new FunctionLoader('src/__tests__/__mocks__/invalidFunctions', 'v0.0', logger, 'description.json')
 		expect(loader.GetFunctions()).toEqual({
-			'ANSER_FUNCTION_BAD_VIDEO_IO:TOM_LEE:25d8965ce98475368485db9c7e7b5078': {
+			'ANSER_FUNCTION_BAD_VIDEO_IO:ANSER_TEST_FUNCTION:TOM_LEE:25d0dc4ea0686c2026f8197724f54c4e': {
 				author: 'Tom Lee',
 				config: [
 					{
@@ -88,7 +90,7 @@ describe('Function Loader', () => {
 				],
 				inputs: [],
 				mainFile: 'dist/index.js',
-				name: 'anser-function-bad-video-io',
+				name: 'Anser Test Function',
 				outputs: [
 					{
 						_aspectRatio: '4:3',
@@ -98,8 +100,9 @@ describe('Function Loader', () => {
 						type: VideoIOType.RTMP
 					}
 				],
+				packageName: 'anser-function-bad-video-io',
 				targetVersion: 'v0.0',
-				version: '1.0.0'
+				version: 'v1.0'
 
 			}
 		})
@@ -110,177 +113,305 @@ describe('Function Loader', () => {
 		expect((loader as any).parseFromFile({
 			name: 'test-function',
 			version: 'v1.0'
-		})).toEqual({
-			author: '',
-			config: [],
-			inputs: [],
-			mainFile: '',
-			name: 'test-function',
-			outputs: [],
-			targetVersion: '',
-			version: 'v1.0'
-		})
+		})).toEqual([])
 	})
 
 	it ('Rejects unknown config type', () => {
 		const loader = new FunctionLoader('', 'v0.0', logger)
-		expect((loader as any).parseFromFile({
-			anser: {
-				description: {
+		expect((loader as any).parseFromFile(strict<FunctionPackageFile>({
+			anser: [
+				{ description: {
+					author: 'Tom Lee',
 					config: [
 						{
 							id: 'some-config',
 							name: 'Some Config',
 							type: 'some junk'
 						}
-					]
-				},
-				targetVersion: 'v0.0'
-			},
-			name: 'test-function',
-			version: 'v1.0'
-		})).toEqual({
-			author: '',
+					],
+					mainFile: 'dist/index.js',
+					name: 'test-function',
+					outputs: [
+						{
+							aspectRatio: '16:9',
+							format: '1080i50',
+							id: 'input1',
+							name: 'Input 1',
+							type: 'RTMP'
+						}
+					],
+					targetVersion: 'v0.0',
+					version: 'v1.0'
+				}}
+			]
+		}), 'test-file')).toEqual([{
+			author: 'Tom Lee',
 			config: [],
 			inputs: [],
-			mainFile: '',
+			mainFile: 'dist/index.js',
 			name: 'test-function',
-			outputs: [],
+			outputs: [
+				{
+					_aspectRatio: '16:9',
+					_format: '1080i50',
+					id: 'input1',
+					name: 'Input 1',
+					type: VideoIOType.RTMP
+				}
+			],
+			packageName: 'test-file',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
-		})
+		}])
 	})
 
 	it ('Rejects missing config name', () => {
 		const loader = new FunctionLoader('', 'v0.0', logger)
-		expect((loader as any).parseFromFile({
-			anser: {
-				description: {
+		expect((loader as any).parseFromFile(strict<FunctionPackageFile>({
+			anser: [
+				{ description: {
+					author: 'Tom Lee',
 					config: [
 						{
 							id: 'some-config',
 							type: 'string'
 						}
-					]
-				},
-				targetVersion: 'v0.0'
-			},
-			name: 'test-function',
-			version: 'v1.0'
-		})).toEqual({
-			author: '',
+					],
+					mainFile: 'dist/index.js',
+					name: 'test-function',
+					outputs: [
+						{
+							aspectRatio: '16:9',
+							format: '1080i50',
+							id: 'input1',
+							name: 'Input 1',
+							type: 'RTMP'
+						}
+					],
+					targetVersion: 'v0.0',
+					version: 'v1.0'
+				}}
+			]
+		}), 'test-file')).toEqual([{
+			author: 'Tom Lee',
 			config: [],
 			inputs: [],
-			mainFile: '',
+			mainFile: 'dist/index.js',
 			name: 'test-function',
-			outputs: [],
+			outputs: [
+				{
+					_aspectRatio: '16:9',
+					_format: '1080i50',
+					id: 'input1',
+					name: 'Input 1',
+					type: VideoIOType.RTMP
+				}
+			],
+			packageName: 'test-file',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
-		})
+		}])
 	})
 
 	it ('Rejects missing config id', () => {
 		const loader = new FunctionLoader('', 'v0.0', logger)
-		expect((loader as any).parseFromFile({
-			anser: {
-				description: {
+		expect((loader as any).parseFromFile(strict<FunctionPackageFile>({
+			anser: [
+				{ description: {
+					author: 'Tom Lee',
 					config: [
 						{
-							name: 'Some Config',
+							name: 'Some config',
 							type: 'string'
 						}
-					]
-				},
-				targetVersion: 'v0.0'
-			},
-			name: 'test-function',
-			version: 'v1.0'
-		})).toEqual({
-			author: '',
+					],
+					mainFile: 'dist/index.js',
+					name: 'test-function',
+					outputs: [
+						{
+							aspectRatio: '16:9',
+							format: '1080i50',
+							id: 'input1',
+							name: 'Input 1',
+							type: 'RTMP'
+						}
+					],
+					targetVersion: 'v0.0',
+					version: 'v1.0'
+				}}
+			]
+		}), 'test-file')).toEqual([{
+			author: 'Tom Lee',
 			config: [],
 			inputs: [],
-			mainFile: '',
+			mainFile: 'dist/index.js',
 			name: 'test-function',
-			outputs: [],
+			outputs: [
+				{
+					_aspectRatio: '16:9',
+					_format: '1080i50',
+					id: 'input1',
+					name: 'Input 1',
+					type: VideoIOType.RTMP
+				}
+			],
+			packageName: 'test-file',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
-		})
+		}])
 	})
 
 	it ('Rejects missing config type', () => {
 		const loader = new FunctionLoader('', 'v0.0', logger)
-		expect((loader as any).parseFromFile({
-			anser: {
-				description: {
+		expect((loader as any).parseFromFile(strict<FunctionPackageFile>({
+			anser: [
+				{ description: {
+					author: 'Tom Lee',
 					config: [
 						{
 							id: 'some-config',
-							name: 'Some Config'
+							name: 'Some config'
 						}
-					]
-				},
-				targetVersion: 'v0.0'
-			},
-			name: 'test-function',
-			version: 'v1.0'
-		})).toEqual({
-			author: '',
+					],
+					mainFile: 'dist/index.js',
+					name: 'test-function',
+					outputs: [
+						{
+							aspectRatio: '16:9',
+							format: '1080i50',
+							id: 'input1',
+							name: 'Input 1',
+							type: 'RTMP'
+						}
+					],
+					targetVersion: 'v0.0',
+					version: 'v1.0'
+				}}
+			]
+		}), 'test-file')).toEqual([{
+			author: 'Tom Lee',
 			config: [],
 			inputs: [],
-			mainFile: '',
+			mainFile: 'dist/index.js',
 			name: 'test-function',
-			outputs: [],
+			outputs: [
+				{
+					_aspectRatio: '16:9',
+					_format: '1080i50',
+					id: 'input1',
+					name: 'Input 1',
+					type: VideoIOType.RTMP
+				}
+			],
+			packageName: 'test-file',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
-		})
+		}])
 	})
 
-	it ('Handles missing package version number', () => {
+	it ('Handles missing config', () => {
+		const loader = new FunctionLoader('', 'v0.0', logger)
+		expect((loader as any).parseFromFile(strict<FunctionPackageFile>({
+			anser: [
+				{ description: {
+					author: 'Tom Lee',
+					mainFile: 'dist/index.js',
+					name: 'test-function',
+					outputs: [
+						{
+							aspectRatio: '16:9',
+							format: '1080i50',
+							id: 'input1',
+							name: 'Input 1',
+							type: 'RTMP'
+						}
+					],
+					targetVersion: 'v0.0',
+					version: 'v1.0'
+				}}
+			]
+		}), 'test-file')).toEqual([{
+			author: 'Tom Lee',
+			config: [],
+			inputs: [],
+			mainFile: 'dist/index.js',
+			name: 'test-function',
+			outputs: [
+				{
+					_aspectRatio: '16:9',
+					_format: '1080i50',
+					id: 'input1',
+					name: 'Input 1',
+					type: VideoIOType.RTMP
+				}
+			],
+			packageName: 'test-file',
+			targetVersion: 'v0.0',
+			version: 'v1.0'
+		}])
+	})
+
+	it ('Rejects missing version number', () => {
 		const loader = new FunctionLoader('', 'v0.0', logger)
 		expect((loader as any).parseFromFile({
-			anser: {
-				description: {
+			anser: [
+				{ description: {
+					author: 'Tom Lee',
 					config: [
 						{
 							id: 'some-config',
-							name: 'Some Config'
+							type: 'string'
 						}
-					]
-				},
-				targetVersion: 'v0.0'
-			},
-			name: 'test-function'
-		})).toEqual({
-			author: '',
-			config: [],
-			inputs: [],
-			mainFile: '',
-			name: 'test-function',
-			outputs: [],
-			targetVersion: 'v0.0',
-			version: ''
-		})
+					],
+					mainFile: 'dist/index.js',
+					name: 'test-function',
+					outputs: [
+						{
+							aspectRatio: '16:9',
+							format: '1080i50',
+							id: 'input1',
+							name: 'Input 1',
+							type: 'RTMP'
+						}
+					],
+					targetVersion: 'v0.0'
+				}}
+			]
+		}, 'test-file')).toEqual([])
 	})
 
-	it ('Handles missing package name', () => {
+	it ('Rejects incompatible target version', () => {
 		const loader = new FunctionLoader('', 'v0.0', logger)
 		expect((loader as any).parseFromFile({
-			anser: {
-				description: {
-					config: []
-				},
-				targetVersion: 'v0.0'
-			}
-		})).toEqual({
-			author: '',
-			config: [],
-			inputs: [],
-			mainFile: '',
-			name: '',
-			outputs: [],
-			targetVersion: 'v0.0',
-			version: ''
-		})
+			anser: [
+				{ description: {
+					author: 'Tom Lee',
+					config: [],
+					mainFile: 'dist/index.js',
+					name: 'test-function',
+					outputs: [
+						{
+							aspectRatio: '16:9',
+							format: '1080i50',
+							id: 'input1',
+							name: 'Input 1',
+							type: 'RTMP'
+						}
+					],
+					targetVersion: 'v1.0',
+					version: 'v1.0'
+				}}
+			]
+		}, 'test-file')).toEqual([])
+	})
+
+	it ('Handles missing description', () => {
+		const loader = new FunctionLoader('', 'v0.0', logger)
+		expect((loader as any).parseFromFile({
+			anser: [
+				{ }
+			]
+		}, 'test-file')).toEqual([])
 	})
 
 	it ('Rejects missing video IO format', () => {

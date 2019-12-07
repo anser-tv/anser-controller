@@ -4,6 +4,7 @@
     "dependencies": {
         "anser-function-bad-video-io": "1.0.0",
         "anser-function-not-downloaded": "1.0.0",
-        "anser-function-bad-package-file": "1.0.0"
+        "anser-function-bad-package-file": "1.0.0",
+        "anser-function-no-anser-field": "1.0.0"
     }
 }
