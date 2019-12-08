@@ -17,7 +17,7 @@ describe('Function Loader', () => {
 	it ('Loads functions', () => {
 		const loader = new FunctionLoader('src/__tests__/__mocks__/validFunctions', 'v0.0', logger, 'description.json')
 		expect(loader.GetFunctions()).toEqual({
-			'ANSER_FUNCTION_TEST:ANSER_TEST_FUNCTION:TOM_LEE:386467fcbe572a3555e17618431e094f': {
+			'ANSER_FUNCTION_TEST:ANSER_TEST_FUNCTION:TOM_LEE:0133038320b002572b796074b8b7b434': {
 				author: 'Tom Lee',
 				config: [
 					{
@@ -52,6 +52,7 @@ describe('Function Loader', () => {
 					}
 				],
 				packageName: 'anser-function-test',
+				requirePath: 'src/__tests__/__mocks__/validFunctions/node_modules/anser-function-test/description.json/dist/index.js',
 				targetVersion: 'v0.0',
 				version: 'v1.0'
 
@@ -74,7 +75,7 @@ describe('Function Loader', () => {
 	it ('Rejects bad config values', () => {
 		const loader = new FunctionLoader('src/__tests__/__mocks__/invalidFunctions', 'v0.0', logger, 'description.json')
 		expect(loader.GetFunctions()).toEqual({
-			'ANSER_FUNCTION_BAD_VIDEO_IO:ANSER_TEST_FUNCTION:TOM_LEE:25d0dc4ea0686c2026f8197724f54c4e': {
+			'ANSER_FUNCTION_BAD_VIDEO_IO:ANSER_TEST_FUNCTION:TOM_LEE:efbb29cd89480f6feb046fe222b904f3': {
 				author: 'Tom Lee',
 				config: [
 					{
@@ -101,6 +102,7 @@ describe('Function Loader', () => {
 					}
 				],
 				packageName: 'anser-function-bad-video-io',
+				requirePath: 'src/__tests__/__mocks__/invalidFunctions/node_modules/anser-function-bad-video-io/description.json/dist/index.js',
 				targetVersion: 'v0.0',
 				version: 'v1.0'
 
@@ -113,7 +115,7 @@ describe('Function Loader', () => {
 		expect((loader as any).parseFromFile({
 			name: 'test-function',
 			version: 'v1.0'
-		})).toEqual([])
+		}, 'node_modules/anser', 'package.json')).toEqual([])
 	})
 
 	it ('Rejects unknown config type', () => {
@@ -144,7 +146,7 @@ describe('Function Loader', () => {
 					version: 'v1.0'
 				}}
 			]
-		}), 'test-file')).toEqual([{
+		}), 'node_modules/anser', 'test-file')).toEqual([{
 			author: 'Tom Lee',
 			config: [],
 			inputs: [],
@@ -160,6 +162,7 @@ describe('Function Loader', () => {
 				}
 			],
 			packageName: 'test-file',
+			requirePath: 'node_modules/anser/dist/index.js',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
 		}])
@@ -192,7 +195,7 @@ describe('Function Loader', () => {
 					version: 'v1.0'
 				}}
 			]
-		}), 'test-file')).toEqual([{
+		}), 'node_modules/anser', 'test-file')).toEqual([{
 			author: 'Tom Lee',
 			config: [],
 			inputs: [],
@@ -208,6 +211,7 @@ describe('Function Loader', () => {
 				}
 			],
 			packageName: 'test-file',
+			requirePath: 'node_modules/anser/dist/index.js',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
 		}])
@@ -240,7 +244,7 @@ describe('Function Loader', () => {
 					version: 'v1.0'
 				}}
 			]
-		}), 'test-file')).toEqual([{
+		}), 'node_modules/anser', 'test-file')).toEqual([{
 			author: 'Tom Lee',
 			config: [],
 			inputs: [],
@@ -256,6 +260,7 @@ describe('Function Loader', () => {
 				}
 			],
 			packageName: 'test-file',
+			requirePath: 'node_modules/anser/dist/index.js',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
 		}])
@@ -288,7 +293,7 @@ describe('Function Loader', () => {
 					version: 'v1.0'
 				}}
 			]
-		}), 'test-file')).toEqual([{
+		}), 'node_modules/anser', 'test-file')).toEqual([{
 			author: 'Tom Lee',
 			config: [],
 			inputs: [],
@@ -304,6 +309,7 @@ describe('Function Loader', () => {
 				}
 			],
 			packageName: 'test-file',
+			requirePath: 'node_modules/anser/dist/index.js',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
 		}])
@@ -330,7 +336,7 @@ describe('Function Loader', () => {
 					version: 'v1.0'
 				}}
 			]
-		}), 'test-file')).toEqual([{
+		}), 'node_modules/anser', 'test-file')).toEqual([{
 			author: 'Tom Lee',
 			config: [],
 			inputs: [],
@@ -346,6 +352,7 @@ describe('Function Loader', () => {
 				}
 			],
 			packageName: 'test-file',
+			requirePath: 'node_modules/anser/dist/index.js',
 			targetVersion: 'v0.0',
 			version: 'v1.0'
 		}])
@@ -377,7 +384,7 @@ describe('Function Loader', () => {
 					targetVersion: 'v0.0'
 				}}
 			]
-		}, 'test-file')).toEqual([])
+		}, 'node_modules/anser', 'test-file')).toEqual([])
 	})
 
 	it ('Rejects incompatible target version', () => {
@@ -402,7 +409,7 @@ describe('Function Loader', () => {
 					version: 'v1.0'
 				}}
 			]
-		}, 'test-file')).toEqual([])
+		}, 'node_modules/anser', 'test-file')).toEqual([])
 	})
 
 	it ('Handles missing description', () => {
@@ -411,7 +418,7 @@ describe('Function Loader', () => {
 			anser: [
 				{ }
 			]
-		}, 'test-file')).toEqual([])
+		}, 'node_modules/anser', 'test-file')).toEqual([])
 	})
 
 	it ('Rejects missing video IO format', () => {

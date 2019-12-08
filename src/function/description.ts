@@ -29,7 +29,9 @@ export interface FunctionDescription {
 	/** Video inputs */
 	inputs: VideoIO[]
 	/** Video outputs */
-	outputs: VideoIO[]
+	outputs: VideoIO[],
+	/** Path to require when loading this function */
+	requirePath: string
 }
 
 export interface FunctionConfig {

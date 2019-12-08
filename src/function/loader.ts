@@ -108,12 +108,12 @@ export class FunctionLoader {
 		if (fs.existsSync(functionPath)) {
 			const file: FunctionPackageFile = JSON.parse(fs.readFileSync(functionPath).toString('utf-8'))
 			if (this.validateFile(file)) {
-				return this.parseFromFile(file, fileName)
+				return this.parseFromFile(file, functionPath, fileName)
 			}
 		}
 	}
 
-	private parseFromFile (file: FunctionPackageFile, fileName: string): FunctionDescription[] {
+	private parseFromFile (file: FunctionPackageFile, functionPath: string, fileName: string): FunctionDescription[] {
 		const descriptions: FunctionDescription[] = []
 		const packageName = fileName
 
@@ -124,6 +124,7 @@ export class FunctionLoader {
 				const targetVersion = a.description?.targetVersion?.toString() || ''
 				const author = a.description?.author?.toString() || ''
 				const mainFile = a.description?.mainFile?.toString() || ''
+				const requirePath = `${functionPath}/${mainFile}`
 				const config: FunctionConfig[] = []
 				let inputs: VideoIO[] = []
 				let outputs: VideoIO[] = []
@@ -165,6 +166,7 @@ export class FunctionLoader {
 						name,
 						outputs,
 						packageName,
+						requirePath,
 						targetVersion,
 						version
 					})
