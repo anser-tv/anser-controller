@@ -61,6 +61,10 @@ export class VideoIO {
 	}
 
 	set format (newFormat: string) {
+		if (!newFormat.length) {
+			throw new Error(`No format specified`)
+		}
+
 		if (newFormat.match(/^\d{3,4}[ip]\d{2,3}$/) || newFormat.match(/^any$/i)) {
 			this._format = newFormat.toLowerCase()
 		} else {
@@ -73,6 +77,10 @@ export class VideoIO {
 	}
 
 	set aspectRatio (newRatio: string) {
+		if (!newRatio.length) {
+			throw new Error(`No aspect ratio specified`)
+		}
+
 		if (newRatio.match(/^\d{1,2}:\d{1,2}$/) || newRatio.match(/^any$/i)) {
 			this._aspectRatio = newRatio.toLowerCase()
 		} else {
