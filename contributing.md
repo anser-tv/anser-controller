@@ -6,7 +6,7 @@ Make sure your contributions maintain the coverage requirement by running `yarn 
 
 ## Linting
 
-Ensure your code passes linting with `yarn lint`. We recoomend using VS Code and setting the following option:
+Ensure your code passes linting with `yarn lint`. We recommend using VS Code and setting the following option:
 
 ```JSON
 "editor.codeActionsOnSave": {
