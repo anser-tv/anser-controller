@@ -1,6 +1,7 @@
 import winston = require('winston')
 import { logger as anserlog } from '../logger/logger'
-import { FunctionConfig, FunctionDescription, VideoIO } from './description'
+import { FunctionDescription } from './description'
+import { ValidateFunctionConfig } from './validate-config'
 
 export enum FunctionStatus {
 	NOTUSED = 'NOTUSED', // Created but no action has been run
@@ -13,7 +14,8 @@ export enum FunctionStatus {
 export enum ConfigContraintType {
 	STRING = 'STRING',
 	NUMBER = 'NUMBER',
-	DROPDOWN = 'DROPDOWN'
+	DROPDOWN = 'DROPDOWN',
+	BOOLEAN = 'BOOLEAN'
 }
 
 export interface FunctionRunConfig { [key: string]: number | string | boolean }
@@ -28,7 +30,7 @@ export interface ConfigConstraintString extends ConfigConstraintBase {
 	maxLength?: number
 	/** Minimum number of characters. */
 	minLength?: number
-	/** List of accepted values. */
+	/** List of accepted values. Takes precendence over all other constraints. */
 	acceptedValues?: string[]
 }
 
@@ -36,10 +38,12 @@ export interface ConfigContraintNumber extends ConfigConstraintBase {
 	type: ConfigContraintType.NUMBER
 	minValue?: number
 	maxValue?: number
-	/** If set, minValue will be replace with 0 */
-	mustBePositive?: number
-	/** Takes precendence over mustBePositive and minValue */
-	nonZero?: number
+	/** If set, minValue will be replaced with 0 */
+	mustBePositive?: boolean
+	/** Takes precendence over minValue */
+	nonZero?: boolean
+	/** List of accepted values. Takes precendence over all other constraints. */
+	acceptedValues?: number[]
 }
 
 export interface ConfigConstraintDropdown extends ConfigConstraintBase {
@@ -47,8 +51,17 @@ export interface ConfigConstraintDropdown extends ConfigConstraintBase {
 	acceptedValues: Array<number|string>
 }
 
-export type ConfigConstraint = ConfigConstraintString | ConfigContraintNumber | ConfigConstraintDropdown
-export interface ConstraintMap { [field: string]: ConfigConstraint}
+export interface ConfigContraintBoolean extends ConfigConstraintBase {
+	type: ConfigContraintType.BOOLEAN
+}
+
+export type ConfigConstraint =
+	ConfigConstraintString |
+	ConfigContraintNumber |
+	ConfigConstraintDropdown |
+	ConfigContraintBoolean
+
+export interface ConstraintMap { [field: string]: ConfigConstraint }
 
 /**
  * Abstract implementation of Anser functions.
@@ -98,9 +111,13 @@ export abstract class AnserFunction {
 		}, { })
 	}
 	/** Validates function config. */
-	public abstract Validate (): boolean
+	public Validate (): boolean {
+		return ValidateFunctionConfig(this.config, this.GetAllConfigOptions()) && this.validate()
+	}
 	/** Gets the options and constraints for a particular config option. */
 	public abstract GetConfigOptionsForField (field: string): ConfigConstraint
+	/** Validates function config. */
+	protected abstract validate (): boolean
 	/** Function start implementation. */
 	protected abstract start (): Promise<boolean>
 	/** Checks on whether function can run. */

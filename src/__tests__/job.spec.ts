@@ -26,7 +26,9 @@ const SAMPLE_FUNCTION: FunctionDescription = {
 		sampleOutput
 	],
 	targetVersion: 'v0.0',
-	version: '1.0.0'
+	version: '1.0.0',
+	packageName: 'sample-function',
+	requirePath: ''
 }
 
 describe('Job', () => {
