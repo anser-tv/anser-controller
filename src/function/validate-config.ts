@@ -7,8 +7,6 @@ export function ValidateFunctionConfig (config: FunctionRunConfig, constraints: 
 		const key = keys[i]
 		const constraint = constraints[key]
 
-		if (!constraint) return false
-
 		let confVal = config[key]
 
 		switch(constraint.type) {
@@ -63,13 +61,9 @@ export function ValidateFunctionConfig (config: FunctionRunConfig, constraints: 
 
 				confVal = confVal as number | string
 
-				if (constraint.acceptedValues) {
-					const index = constraint.acceptedValues.indexOf(confVal)
+				const index = constraint.acceptedValues.indexOf(confVal)
 
-					if (index === -1) return false
-
-					if (typeof constraint.acceptedValues[index] !== typeof confVal) return false
-				}
+				if (typeof constraint.acceptedValues[index] !== typeof confVal) return false
 				break
 		}
 		i++

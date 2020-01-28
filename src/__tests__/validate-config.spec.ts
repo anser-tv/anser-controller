@@ -2,7 +2,9 @@ import { ConfigContraintType, ConstraintMap, FunctionRunConfig } from '../functi
 import { ValidateFunctionConfig } from '../function/validate-config'
 
 describe('Validate Config', () => {
+
 	/** Tests for strings */
+
 	it ('Accepts all strings within accepted values', () => {
 		const testValues = ['apple', 'banana', 'carrot']
 		const map: ConstraintMap = {
@@ -195,7 +197,24 @@ describe('Validate Config', () => {
 		})
 	})
 
+	it ('Rejects non-strings', () => {
+		const testValues = [1, 2, false]
+		const map: ConstraintMap = {
+			test1: {
+				type: ConfigContraintType.STRING
+			}
+		}
+
+		testValues.forEach((val) => {
+			const config: FunctionRunConfig = {
+				test1: val
+			}
+			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+		})
+	})
+
 	/** Tests for numbers */
+
 	it ('Accepts all numbers within accepted values', () => {
 		const testValues = [3, 4, 5, 6, 7, 8, 9, 10]
 		const map: ConstraintMap = {
@@ -405,7 +424,24 @@ describe('Validate Config', () => {
 		})
 	})
 
+	it ('Rejects non-number values', () => {
+		const testValues = ['0', false]
+		const map: ConstraintMap = {
+			test1: {
+				type: ConfigContraintType.NUMBER
+			}
+		}
+
+		testValues.forEach((val) => {
+			const config: FunctionRunConfig = {
+				test1: val
+			}
+			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+		})
+	})
+
 	/** Tests for dropdown */
+
 	it ('Accepts values in acceptedValues', () => {
 		const testValues = [3, '4', 5, '6', 7, '8']
 		const map: ConstraintMap = {
@@ -429,6 +465,56 @@ describe('Validate Config', () => {
 			test1: {
 				type: ConfigContraintType.DROPDOWN,
 				acceptedValues: [0, '1', 2]
+			}
+		}
+
+		testValues.forEach((val) => {
+			const config: FunctionRunConfig = {
+				test1: val
+			}
+			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+		})
+	})
+
+	it ('Rejects boolean values', () => {
+		const testValues = [true, false]
+		const map: ConstraintMap = {
+			test1: {
+				type: ConfigContraintType.DROPDOWN,
+				acceptedValues: ['true', 'false']
+			}
+		}
+
+		testValues.forEach((val) => {
+			const config: FunctionRunConfig = {
+				test1: val
+			}
+			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+		})
+	})
+
+	/** Tests for booleans */
+	it ('Accepts a boolean value', () => {
+		const testValues = [true, false]
+		const map: ConstraintMap = {
+			test1: {
+				type: ConfigContraintType.BOOLEAN
+			}
+		}
+
+		testValues.forEach((val) => {
+			const config: FunctionRunConfig = {
+				test1: val
+			}
+			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+		})
+	})
+
+	it ('Rejects non-boolean values', () => {
+		const testValues = ['true', 'false', 1]
+		const map: ConstraintMap = {
+			test1: {
+				type: ConfigContraintType.BOOLEAN
 			}
 		}
 
