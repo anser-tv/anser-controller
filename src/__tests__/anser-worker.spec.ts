@@ -15,12 +15,12 @@ function mockGetSystemInfo (): Promise<SystemInfoData> {
 
 describe('anser-worker', () => {
 	it ('Starts', () => {
-		const worker = new AnserWorker('dev-worker', '127.0.0.1:5001')
+		const worker = new AnserWorker('dev-worker', '127.0.0.1:5001', '')
 		worker.Start()
 	})
 
 	it('Resolves false with no commands', async () => {
-		const worker = new AnserWorker('dev-worker', '127.0.0.1:5001');
+		const worker = new AnserWorker('dev-worker', '127.0.0.1:5001', '');
 		(worker as any).getSystemInfo = mockGetSystemInfo
 		const commands: HeartbeatResponse = {
 			commands: []
@@ -32,7 +32,7 @@ describe('anser-worker', () => {
 	})
 
 	it('Sends SystemInfo', async () => {
-		const worker = new AnserWorker('dev-worker', '127.0.0.1:5001');
+		const worker = new AnserWorker('dev-worker', '127.0.0.1:5001', '');
 		(worker as any).getSystemInfo = mockGetSystemInfo
 		const commands: HeartbeatResponse = {
 			commands: [{

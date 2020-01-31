@@ -1,4 +1,12 @@
-import { Heartbeat, HeartbeatCommandType, HeartbeatDataSystemInfo, HeartbeatResponse, logger, SystemInfoData } from 'anser-types'
+import {
+	FunctionLoader,
+	Heartbeat,
+	HeartbeatCommandType,
+	HeartbeatDataSystemInfo,
+	HeartbeatResponse,
+	logger,
+	SystemInfoData
+} from 'anser-types'
 import { post } from 'request-promise'
 import { fsSize } from 'systeminformation'
 import { currentLoad } from 'systeminformation'
@@ -6,6 +14,7 @@ import { mem } from 'systeminformation'
 
 const KEEPALIVE_INTERVAL = 1000
 const API_VERSION = 'v1.0'
+const ANSER_VERSION = 'v1.0'
 
 /**
  * Represents a worker.
@@ -17,15 +26,20 @@ export class AnserWorker {
 	private _running: boolean = false
 	private _connected: boolean = false
 	private _nextHeartbeat: Heartbeat = { time: new Date(), data: [] }
+	private _functionLoader: FunctionLoader
+
 	constructor (
 		public id: string,
 		public controller: string,
+		public functionDirectory: string,
 		public debug?: boolean
 	) {
 		/* istanbul ignore next */
 		if (this.debug) {
 			this._protocol = 'http'
 		}
+
+		this._functionLoader = new FunctionLoader(functionDirectory, ANSER_VERSION, logger)
 	}
 
 	/**
@@ -44,14 +58,14 @@ export class AnserWorker {
 		post(
 			`${this._protocol}://${this.controller}/api/${API_VERSION}/heartbeat/${this.id}`,
 			{ body: this._nextHeartbeat, json: true, resolveWithFullResponse: true }
-		).then((data: HeartbeatResponse) => {
+		).then((data: { body: HeartbeatResponse }) => {
 			if (!this._connected) {
 				logger.info(`Connected to controller`)
 			}
 			this._connected = true
 			this.resetHeartbeat()
 			if (data) {
-				this.processHeartbeatResponse(data).catch((err) => {
+				this.processHeartbeatResponse(data.body).catch((err) => {
 					if (err) throw err
 				})
 			}
@@ -69,7 +83,7 @@ export class AnserWorker {
 	}
 
 	private async processHeartbeatResponse (resp: HeartbeatResponse): Promise<boolean> {
-		if (resp.commands && resp.commands.length) {
+		if (resp && resp.commands && resp.commands.length) {
 			const actions = resp.commands.map(async (command) => {
 				switch(command.type) {
 					case HeartbeatCommandType.SendSystemInfo:

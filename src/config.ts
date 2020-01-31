@@ -2,7 +2,7 @@ import fs from 'fs'
 export interface Config {
 	id: string,
 	controller: string,
-	functionsDirectory?: string
+	functionsDirectory: string
 }
 
 /**
@@ -16,7 +16,7 @@ export class ConfigLoader {
 		const conf = JSON.parse(data)
 		if (this.isValidConfig(conf)) {
 			conf.controller = conf.controller.replace(/^https?:\/\//, '')
-			conf.functionsDirectory = conf.functionsDirectory ? conf.functionsDirectory : 'functions'
+			conf.functionsDirectory = conf.functionsDirectory ?? 'functions'
 			this.config = conf
 		} else {
 			throw Error(`Invalid config: ${file}`)
