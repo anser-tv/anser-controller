@@ -10,7 +10,7 @@ describe('state', () => {
 		const result2 = (state as any)._heartBeats
 		const result3 = (state as any)._lastHeartbeat['test-worker']
 		state.StopManager()
-		expect(result1).toEqual({ 'test-worker': WorkerStatus.ONLINE })
+		expect(result1).toEqual(new Map([['test-worker', WorkerStatus.ONLINE]]))
 		expect(result2).toEqual({ 'test-worker': [heartbeat]})
 		expect(result3).toEqual(heartbeat)
 	})
@@ -112,10 +112,10 @@ describe('RequestSystemInfo', () => {
 		(state as any)._lastHeartbeat['dev-worker'] = {
 			time: 0
 		};
-		(state as any)._workersRegistered['dev-worker'] = WorkerStatus.ONLINE
-		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 60 * 1000);
+		(state as any)._workersRegistered.set('dev-worker', WorkerStatus.ONLINE)
+		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 61 * 1000);
 		(state as any).manageState()
-		const result = (state as any)._workersRegistered['dev-worker']
+		const result = (state as any)._workersRegistered.get('dev-worker')
 		state.StopManager()
 		dateNowSpy.mockRestore()
 		expect(result).toBe(WorkerStatus.OFFLINE)
@@ -126,10 +126,10 @@ describe('RequestSystemInfo', () => {
 		(state as any)._lastHeartbeat['dev-worker'] = {
 			time: 0
 		};
-		(state as any)._workersRegistered['dev-worker'] = WorkerStatus.ONLINE
+		(state as any)._workersRegistered.set('dev-worker', WorkerStatus.ONLINE)
 		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 1000);
 		(state as any).manageState()
-		const result = (state as any)._workersRegistered['dev-worker']
+		const result = (state as any)._workersRegistered.get('dev-worker')
 		state.StopManager()
 		dateNowSpy.mockRestore()
 		expect(result).toBe(WorkerStatus.ONLINE)
@@ -140,10 +140,10 @@ describe('RequestSystemInfo', () => {
 		(state as any)._lastHeartbeat['dev-worker'] = {
 			time: 0
 		};
-		(state as any)._workersRegistered['dev-worker'] = WorkerStatus.OFFLINE
+		(state as any)._workersRegistered.set('dev-worker', WorkerStatus.OFFLINE)
 		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 1000);
 		(state as any).manageState()
-		const result = (state as any)._workersRegistered['dev-worker']
+		const result = (state as any)._workersRegistered.get('dev-worker')
 		state.StopManager()
 		dateNowSpy.mockRestore()
 		expect(result).toBe(WorkerStatus.OFFLINE)
@@ -155,17 +155,17 @@ describe('RequestSystemInfo', () => {
 		state.AddHeartbeat('test-worker', heartbeat)
 		const result = (state as any)._workersRegistered
 		state.StopManager()
-		expect(result).toEqual({ 'test-worker': WorkerStatus.ONLINE })
+		expect(result).toEqual(new Map([['test-worker', WorkerStatus.ONLINE]]))
 	})
 
 	it('Sets reconnected server to online', () => {
 		const state = new State()
 		const heartbeat = { time: new Date(), data: [] };
-		(state as any)._workersRegistered['test-worker'] = WorkerStatus.OFFLINE;
+		(state as any)._workersRegistered.set('test-worker', WorkerStatus.OFFLINE);
 		(state as any)._heartBeats['test-worker'] = []
 		state.AddHeartbeat('test-worker', heartbeat)
 		const result = (state as any)._workersRegistered
 		state.StopManager()
-		expect(result).toEqual({ 'test-worker': WorkerStatus.ONLINE })
+		expect(result).toEqual(new Map([['test-worker', WorkerStatus.ONLINE]]))
 	})
 })

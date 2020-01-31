@@ -5,7 +5,7 @@ import https from 'https'
 import { Auth } from '../auth/auth'
 import { Config, ConfigLoader } from '../config'
 import { LogRequest, LogResponse } from '../logger/logger'
-import { State } from './state'
+import { State, WorkerStatus } from './state'
 
 export const API_VERSION = 'v1.0'
 
@@ -98,7 +98,7 @@ export class App {
 
 	private authenticationChallenge (req: express.Request, res: express.Response, next: express.NextFunction): void {
 		LogRequest (req, logger)
-		if (!this .isAuthenticated(req)) {
+		if (!this.isAuthenticated(req)) {
 			logger.info(`Denied access to client ${req.ip}`)
 			this.denyAccess(res)
 		} else {
@@ -118,7 +118,7 @@ export class App {
 		 */
 		this.app.get(
 			'/',
-			(req: express.Request, res: express.Response, next: express.NextFunction) => {
+			(_req: express.Request, res: express.Response, next: express.NextFunction) => {
 				LogResponse(`Sending code 200`, logger)
 				res.status(200).end()
 			}
@@ -129,7 +129,7 @@ export class App {
 		 */
 		this.app.get(
 			`/api/${API_VERSION}/auth/check`,
-			(req: express.Request, res: express.Response) => {
+			(_req: express.Request, res: express.Response) => {
 				res.status(200).end()
 			}
 		)
@@ -139,9 +139,8 @@ export class App {
 		 */
 		this.app.get(
 			`/api/${API_VERSION}/workers`,
-			(req: express.Request, res: express.Response) => {
-				LogResponse('Not implemented', logger)
-				res.status(501).send('Not implemented')
+			(_req: express.Request, res: express.Response) => {
+				res.send(this.state.GetAllWorkers())
 			}
 		)
 
@@ -151,8 +150,19 @@ export class App {
 		this.app.get(
 			`/api/${API_VERSION}/workers/status/:status`,
 			(req: express.Request, res: express.Response) => {
-				LogResponse('Not implemented', logger)
-				res.status(501).send('Not implemented')
+				if (req.params.status.toUpperCase() in WorkerStatus) {
+					const status = WorkerStatus[req.params.status.toUpperCase() as keyof typeof WorkerStatus]
+					res.send(this.state.GetWorkersOfStatus(status))
+				} else {
+					res.status(400).send(`Unknown status: ${req.params.status}`)
+				}
+			}
+		)
+
+		this.app.get(
+			`/api/${API_VERSION}/workers/:workerId/status`,
+			(req: express.Request, res: express.Response) => {
+				res.send({ status: this.state.GetWorkerStatus(req.params.workerId) })
 			}
 		)
 
@@ -160,10 +170,9 @@ export class App {
 		 * Gets all heartbeats for a given worker.
 		 */
 		this.app.get(
-			`/api/${API_VERSION}/heartbeat/:workerId`,
+			`/api/${API_VERSION}/heartbeats/:workerId`,
 			(req: express.Request, res: express.Response) => {
-				LogResponse('Not implemented', logger)
-				res.status(501).send('Not implemented')
+				res.send(this.state.GetAllHearbeatsForWorker(req.params.workerId))
 			}
 		)
 
