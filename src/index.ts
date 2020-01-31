@@ -1,6 +1,6 @@
 import { App } from './app/app'
-const AUTH_KEYS = process.env.auth_keys ?? 'config/auth_keys.txt'
-const app = new App(AUTH_KEYS)
+const config = process.env.config ?? 'config/config.json'
+const app = new App(config)
 
 // Close server when process exits.
 process.on('exit', () => app.Close())

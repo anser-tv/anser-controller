@@ -14,7 +14,7 @@
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
     "postinstall": "yarn install-recursive",
     "start": "node dist/index.js",
-    "test": "yarn lint && jest --passWithNoTests --runInBand",
+    "test": "yarn lint && jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
     "watch": "nodemon"
   },
   "devDependencies": {
@@ -30,7 +30,7 @@
     "ts-jest": "^24.1.0",
     "ts-node": "^8.5.0",
     "tslint": "^5.20.1",
-    "typescript": "^3.7.2",
+    "typescript": "^3.7.5",
     "yarn": "^1.19.1",
     "yarn-recursive": "^1.1.0"
   },

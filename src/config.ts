@@ -1,7 +1,7 @@
 import fs from 'fs'
 export interface Config {
 	authKeys: string[]
-	functionsDirectory?: string
+	functionsDirectory: string
 }
 
 /**
@@ -14,7 +14,7 @@ export class ConfigLoader {
 		const data = fs.readFileSync(file, { encoding: 'utf-8' })
 		const conf = JSON.parse(data)
 		if (this.isValidConfig(conf)) {
-			conf.functionsDirectory = conf.functionsDirectory ? conf.functionsDirectory : 'functions'
+			conf.functionsDirectory = conf.functionsDirectory ?? 'functions'
 			this.config = conf
 		} else {
 			throw Error(`Invalid config: ${file}`)

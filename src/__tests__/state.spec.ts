@@ -6,16 +6,22 @@ describe('state', () => {
 		const state = new State()
 		const heartbeat = { time: new Date(), data: [] }
 		state.AddHeartbeat('test-worker', heartbeat)
-		expect((state as any)._workersRegistered).toEqual({ 'test-worker': WorkerStatus.ONLINE })
-		expect((state as any)._heartBeats).toEqual({ 'test-worker': [heartbeat]})
-		expect((state as any)._lastHeartbeat['test-worker']).toEqual(heartbeat)
+		const result1 = (state as any)._workersRegistered
+		const result2 = (state as any)._heartBeats
+		const result3 = (state as any)._lastHeartbeat['test-worker']
+		state.StopManager()
+		expect(result1).toEqual({ 'test-worker': WorkerStatus.ONLINE })
+		expect(result2).toEqual({ 'test-worker': [heartbeat]})
+		expect(result3).toEqual(heartbeat)
 	})
 })
 
 describe('RequestSystemInfo', () => {
 	it ('Requests when systeminfo has not been logged', () => {
 		const state = new State()
-		expect((state as any).requestSystemInfo('test-worker')).toBe(true)
+		const result = (state as any).requestSystemInfo('test-worker')
+		state.StopManager()
+		expect(result).toBe(true)
 	})
 
 	it('Doesn\'t request systeminfo when systeminfo has been recently added', () => {
@@ -33,8 +39,10 @@ describe('RequestSystemInfo', () => {
 			data,
 			lastReceived: { getTime: () => 0 }
 		}
-		expect((state as any).requestSystemInfo('test-worker')).toBe(false)
+		const result = (state as any).requestSystemInfo('test-worker')
 		dateNowSpy.mockRestore()
+		state.StopManager()
+		expect(result).toBe(false)
 	})
 
 	it('Requests systeminfo when it\'s been 5 minutes since last recieved', () => {
@@ -51,8 +59,10 @@ describe('RequestSystemInfo', () => {
 			lastReceived: { getTime: () => 0 }
 		}
 		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 60 * 1000)
-		expect((state as any).requestSystemInfo('test-worker')).toBe(true)
+		const result = (state as any).requestSystemInfo('test-worker')
 		dateNowSpy.mockRestore()
+		state.StopManager()
+		expect(result).toBe(true)
 	})
 
 	it('Recognises valid system info data', () => {
@@ -64,7 +74,9 @@ describe('RequestSystemInfo', () => {
 			ram_available: 30,
 			ram_used: 25
 		}
-		expect((state as any).isValidSystemInfoData(systemInfoData)).toBe(true)
+		const result = (state as any).isValidSystemInfoData(systemInfoData)
+		state.StopManager()
+		expect(result).toBe(true)
 	})
 
 	it('Recognises invalid system info data', () => {
@@ -75,14 +87,17 @@ describe('RequestSystemInfo', () => {
 			disk_usage: 40,
 			ram_available: 30
 		}
-		expect((state as any).isValidSystemInfoData(systemInfoData)).toBe(false)
+		const result = (state as any).isValidSystemInfoData(systemInfoData)
+		state.StopManager()
+		expect(result).toBe(false)
 	})
 
 	it('Starts manager', () => {
 		const state = new State()
 		state.StartManager()
-		expect((state as any)._runManager).toBe(true)
+		const result = (state as any)._runManager
 		state.StopManager()
+		expect(result).toBe(true)
 	})
 
 	it('Stops manager', () => {
@@ -100,7 +115,10 @@ describe('RequestSystemInfo', () => {
 		(state as any)._workersRegistered['dev-worker'] = WorkerStatus.ONLINE
 		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 60 * 1000);
 		(state as any).manageState()
-		expect((state as any)._workersRegistered['dev-worker']).toBe(WorkerStatus.OFFLINE)
+		const result = (state as any)._workersRegistered['dev-worker']
+		state.StopManager()
+		dateNowSpy.mockRestore()
+		expect(result).toBe(WorkerStatus.OFFLINE)
 	})
 
 	it('Does not alert on connected worker', () => {
@@ -111,7 +129,10 @@ describe('RequestSystemInfo', () => {
 		(state as any)._workersRegistered['dev-worker'] = WorkerStatus.ONLINE
 		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 1000);
 		(state as any).manageState()
-		expect((state as any)._workersRegistered['dev-worker']).toBe(WorkerStatus.ONLINE)
+		const result = (state as any)._workersRegistered['dev-worker']
+		state.StopManager()
+		dateNowSpy.mockRestore()
+		expect(result).toBe(WorkerStatus.ONLINE)
 	})
 
 	it('Does not alert on already disconnected worker', () => {
@@ -122,14 +143,19 @@ describe('RequestSystemInfo', () => {
 		(state as any)._workersRegistered['dev-worker'] = WorkerStatus.OFFLINE
 		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 1000);
 		(state as any).manageState()
-		expect((state as any)._workersRegistered['dev-worker']).toBe(WorkerStatus.OFFLINE)
+		const result = (state as any)._workersRegistered['dev-worker']
+		state.StopManager()
+		dateNowSpy.mockRestore()
+		expect(result).toBe(WorkerStatus.OFFLINE)
 	})
 
 	it('Sets new server to online', () => {
 		const state = new State()
 		const heartbeat = { time: new Date(), data: [] }
 		state.AddHeartbeat('test-worker', heartbeat)
-		expect((state as any)._workersRegistered).toEqual({ 'test-worker': WorkerStatus.ONLINE })
+		const result = (state as any)._workersRegistered
+		state.StopManager()
+		expect(result).toEqual({ 'test-worker': WorkerStatus.ONLINE })
 	})
 
 	it('Sets reconnected server to online', () => {
@@ -138,6 +164,8 @@ describe('RequestSystemInfo', () => {
 		(state as any)._workersRegistered['test-worker'] = WorkerStatus.OFFLINE;
 		(state as any)._heartBeats['test-worker'] = []
 		state.AddHeartbeat('test-worker', heartbeat)
-		expect((state as any)._workersRegistered).toEqual({ 'test-worker': WorkerStatus.ONLINE })
+		const result = (state as any)._workersRegistered
+		state.StopManager()
+		expect(result).toEqual({ 'test-worker': WorkerStatus.ONLINE })
 	})
 })

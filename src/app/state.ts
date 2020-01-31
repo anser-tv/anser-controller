@@ -26,6 +26,7 @@ export class State {
 	private _lastHeartbeat: { [workerId: string]: Heartbeat }
 	private _systemInfo: { [workerId: string]: { lastReceived: Date, data: SystemInfoData } }
 	private _runManager: boolean = false
+	private _timeout?: NodeJS.Timeout
 
 	constructor () {
 		this._workersRegistered = { }
@@ -47,6 +48,7 @@ export class State {
 	 */
 	public StopManager (): void {
 		this._runManager = false
+		if (this._timeout) clearTimeout(this._timeout)
 	}
 
 	/**
@@ -128,7 +130,7 @@ export class State {
 
 		/* istanbul ignore next */
 		if(this._runManager) {
-			setTimeout(() => this.manageState(), STATE_MANAGEMENT_INTERVAL)
+			this._timeout = setTimeout(() => this.manageState(), STATE_MANAGEMENT_INTERVAL)
 		}
 	}
 }

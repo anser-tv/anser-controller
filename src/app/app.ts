@@ -9,7 +9,9 @@ import { State } from './state'
 
 export const API_VERSION = 'v1.0'
 
+/* istanbul ignore next */
 const DEV = process.env.DEV ?? false
+/* istanbul ignore next */
 const PORT = process.env.PORT ?? 5000
 
 /**
@@ -23,8 +25,9 @@ export class App {
 	public state: State
 	public config: Config
 
-	constructor (configDirectory?: string) {
-		this.config = new ConfigLoader(configDirectory ?? 'configs').config
+	constructor (configFile?: string) {
+		/* istanbul ignore next */
+		this.config = new ConfigLoader(configFile ?? 'configs').config
 		this.auth = new Auth()
 		this.state = new State()
 		this.app = express()
@@ -49,6 +52,7 @@ export class App {
 			this.serverDevelop.listen((PORT as number) + 1)
 			logger.warn(`App is serving over HTTP at http://127.0.0.1:${(PORT as number) + 1}. This is STRONGLY discouraged for deployment.`)
 		}
+		this.state.StartManager()
 	}
 
 	/**
@@ -66,6 +70,8 @@ export class App {
 			logger.info('Closing develop server')
 			this.serverDevelop.close(() => logger.info('Develop server closed'))
 		}
+
+		this.state.StopManager()
 	}
 
 	private isAuthenticated (req: express.Request): boolean {
@@ -93,10 +99,10 @@ export class App {
 	private authenticationChallenge (req: express.Request, res: express.Response, next: express.NextFunction): void {
 		LogRequest (req, logger)
 		if (!this .isAuthenticated(req)) {
-			logger.info(`Denied access to user ${req.ip}`)
+			logger.info(`Denied access to client ${req.ip}`)
 			this.denyAccess(res)
 		} else {
-			logger.info(`User is authenticated ${req.ip}`)
+			logger.debug(`Client is authenticated ${req.ip}`)
 			next()
 		}
 	}
@@ -181,7 +187,8 @@ export class App {
 					const result = this.state.AddHeartbeat(req.params.workerId, body as Heartbeat)
 
 					if (result.commands && result.commands.length) {
-						res.send(result.commands)
+						logger.debug(`Sending commands: ${JSON.stringify(result)}`)
+						res.send(result)
 					} else {
 						res.status(200).end()
 					}
