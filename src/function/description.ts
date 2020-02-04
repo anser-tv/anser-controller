@@ -1,9 +1,11 @@
+import { ConfigConstraint } from './function'
+
 export enum ConfigType {
-	UNKNOWN,
-	DROPDOWN,
-	STRING,
-	INTEGER,
-	BOOLEAN
+	UNKNOWN = 'UNKNOWN',
+	DROPDOWN = 'DROPDOWN',
+	STRING = 'STRING',
+	INTEGER = 'INTEGER',
+	BOOLEAN = 'BOOLEAN'
 }
 
 export enum VideoIOType {
@@ -22,22 +24,28 @@ export interface FunctionDescription {
 	version: string
 	/** Targeted Anser version */
 	targetVersion: string
-	/** Main file of function, for require(mainFile) */
-	mainFile: string
+	/** Main file of function, for require(main) */
+	main: string
 	/** Config options of the function */
 	config: FunctionConfig[]
 	/** Video inputs */
 	inputs: VideoIO[]
 	/** Video outputs */
-	outputs: VideoIO[],
-	/** Path to require when loading this function */
-	requirePath: string
+	outputs: VideoIO[]
 }
 
 export interface FunctionConfig {
 	name: string
 	id: string
 	type: ConfigType
+	constraints: ConfigConstraint
+}
+
+/**
+ * id: PACKAGE_NAME:FUNCTION_NAME:HASH
+ */
+export interface FunctionDescriptionMap {
+	[id: string]: FunctionDescription
 }
 
 /**
@@ -50,10 +58,15 @@ export class VideoIO {
 	constructor (
 		public name: string,
 		public id: string,
-		public type: VideoIOType
+		public type: VideoIOType,
+		format: string,
+		aspectRatio: string
 	) {
 		this._format = 'any'
 		this._aspectRatio = 'any'
+
+		this.format = format
+		this.aspectRatio = aspectRatio
 	}
 
 	get format (): string {
@@ -65,7 +78,7 @@ export class VideoIO {
 			throw new Error(`No format specified`)
 		}
 
-		if (newFormat.match(/^\d{3,4}[ip]\d{2,3}$/) || newFormat.match(/^any$/i)) {
+		if (newFormat.match(/^\d{3,4}[ip]\d{2,3}$/i) || newFormat.match(/^[PAL|NTSC]$/i) || newFormat.match(/^any$/i)) {
 			this._format = newFormat.toLowerCase()
 		} else {
 			throw new Error(`Invalid format: ${newFormat}`)
@@ -81,7 +94,7 @@ export class VideoIO {
 			throw new Error(`No aspect ratio specified`)
 		}
 
-		if (newRatio.match(/^\d{1,2}:\d{1,2}$/) || newRatio.match(/^any$/i)) {
+		if (newRatio.match(/^\d+(?:\.\d+)?(?::\d+)?$/) || newRatio.match(/^any$/i)) {
 			this._aspectRatio = newRatio.toLowerCase()
 		} else {
 			throw new Error(`Invalid aspect ratio: ${newRatio}`)

@@ -1,0 +1,10 @@
+{
+    "main": "index.js",
+    "anser": {
+        "targetVersion": "v1.0"
+    },
+    "dependencies": {
+        "somePackage": "1.0.0",
+        "anotherPackage": "^1.0.0"
+    }
+}

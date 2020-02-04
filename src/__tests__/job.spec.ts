@@ -1,12 +1,10 @@
-import { ConfigType, FunctionDescription, VideoIO, VideoIOType } from '../function/description'
+import { ConfigType, FunctionConfig, FunctionDescription, VideoIO, VideoIOType } from '../function/description'
+import { ConfigContraintType } from '../function/function'
 import { Job, TargetType } from '../job/job'
+import { strict } from '../strict'
 
-const sampleInput = new VideoIO('Input', 'input', VideoIOType.RTMP)
-sampleInput.format = '1080i50'
-sampleInput.aspectRatio = '16:9'
-const sampleOutput = new VideoIO('Output', 'output', VideoIOType.RTMP)
-sampleOutput.format = '1080i50'
-sampleOutput.aspectRatio = '16:9'
+const sampleInput = new VideoIO('Input', 'input', VideoIOType.RTMP, '1080i50', '16:9')
+const sampleOutput = new VideoIO('Output', 'output', VideoIOType.RTMP, '1080i50', '16:9')
 
 const SAMPLE_FUNCTION: FunctionDescription = {
 	author: 'Tom Lee',
@@ -14,21 +12,23 @@ const SAMPLE_FUNCTION: FunctionDescription = {
 		{
 			id: 'videoCodec',
 			name: 'Video Codec',
-			type: ConfigType.STRING
+			type: ConfigType.STRING,
+			constraints: {
+				type: ConfigContraintType.STRING
+			}
 		}
 	],
 	inputs: [
 		sampleInput
 	],
-	mainFile: 'main.js',
+	main: 'main.js',
 	name: 'Sample Function',
 	outputs: [
 		sampleOutput
 	],
 	targetVersion: 'v0.0',
 	version: '1.0.0',
-	packageName: 'sample-function',
-	requirePath: ''
+	packageName: 'sample-function'
 }
 
 describe('Job', () => {
@@ -73,11 +73,16 @@ describe('Job', () => {
 			SAMPLE_FUNCTION.inputs,
 			SAMPLE_FUNCTION.outputs
 		)
-		expect((job as any).getConfigById('videoCodec')).toEqual({
-			id: 'videoCodec',
-			name: 'Video Codec',
-			type: ConfigType.STRING
-		})
+		expect((job as any).getConfigById('videoCodec')).toEqual(
+			strict<FunctionConfig>({
+				id: 'videoCodec',
+				name: 'Video Codec',
+				type: ConfigType.STRING,
+				constraints: {
+					type: ConfigContraintType.STRING
+				}
+			})
+		)
 	})
 
 	it('Finds input by Id', () => {

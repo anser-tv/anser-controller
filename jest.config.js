@@ -11,6 +11,7 @@ module.exports = {
 		"!src/__tests__/**",
 		"!src/server.ts",
 		"!src/index.ts",
+		"!src/function/anser-manifest.ts",
 		"!src/function/function.ts",
 		"!src/logger/logger.ts"
 	],

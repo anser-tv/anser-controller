@@ -1,7 +1,8 @@
 export const enum HeartbeatCommandType {
 	SendSystemInfo = 'SEND_SYSTEM_INFO',
 	SendCaptureDevices = 'SEND_CAPTURE_DEVICES',
-	CheckJobCanRun = 'CHECK_JOB_CAN_RUN'
+	CheckJobCanRun = 'CHECK_JOB_CAN_RUN',
+	ListFunctions = 'LIST_FUNCTIONS'
 }
 
 export interface HeartbeatCommandBase {
@@ -20,5 +21,12 @@ export interface HeartbeatCommandCheckJobCanRun extends HeartbeatCommandBase {
 	type: HeartbeatCommandType.CheckJobCanRun
 }
 
+export interface HeartbeatCommandListFunctions extends HeartbeatCommandBase {
+	type: HeartbeatCommandType.ListFunctions
+}
+
 export type HeartbeatCommand =
-	HeartbeatCommandSendSystemInfo | HeartbeatCommandSendCaptureDevices | HeartbeatCommandCheckJobCanRun
+	HeartbeatCommandSendSystemInfo |
+	HeartbeatCommandSendCaptureDevices |
+	HeartbeatCommandCheckJobCanRun |
+	HeartbeatCommandListFunctions

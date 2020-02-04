@@ -1,3 +1,4 @@
+import { FunctionDescriptionMap } from './function/description'
 import { HeartbeatCommand, HeartbeatCommandType } from './heartbeat-commands/heartbeat-commands'
 
 export interface Heartbeat {
@@ -23,7 +24,12 @@ export interface HeartbeatDataSystemInfo extends HeartbeatDataBase {
 	data: SystemInfoData
 }
 
-export type HeartbeatDataAny = HeartbeatDataSystemInfo
+export interface HeartbeatDataListFunctions extends HeartbeatDataBase {
+	command: HeartbeatCommandType.ListFunctions,
+	data: FunctionDescriptionMap
+}
+
+export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions
 
 export interface HeartbeatResponse {
 	commands?: HeartbeatCommand[]

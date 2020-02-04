@@ -104,8 +104,8 @@ export abstract class AnserFunction {
 	}
 	/** Gets all config options and constraints for a function. */
 	public GetAllConfigOptions (): ConstraintMap {
-		return this.description.config.map<ConstraintMap>((conf) => {
-			return{ [conf.name]: this.GetConfigOptionsForField(conf.name)}
+		return this.description.config.map<ConstraintMap | { }>((conf) => {
+			return { [conf.name]: conf.constraints }
 		}).reduce((prev, cur) => {
 			return { ...prev, ...cur}
 		}, { })
@@ -115,7 +115,7 @@ export abstract class AnserFunction {
 		return ValidateFunctionConfig(this.config, this.GetAllConfigOptions()) && this.validate()
 	}
 	/** Gets the options and constraints for a particular config option. */
-	public abstract GetConfigOptionsForField (field: string): ConfigConstraint
+	public abstract GetConfigOptionsForField (field: string): ConfigConstraint | void
 	/** Validates function config. */
 	protected abstract validate (): boolean
 	/** Function start implementation. */
