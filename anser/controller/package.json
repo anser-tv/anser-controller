@@ -35,6 +35,7 @@
     "yarn-recursive": "^1.1.0"
   },
   "dependencies": {
+    "@types/node": "^13.7.1",
     "anser-types": "git+https://github.com/anser-tv/anser-types.git#master",
     "express": "^4.17.1",
     "supertest": "^4.0.2",
