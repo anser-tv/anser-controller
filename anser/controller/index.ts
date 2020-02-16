@@ -1,4 +1,4 @@
-import { App } from './app/app'
+import { App } from './src/app/app'
 const config = process.env.config ?? 'config/config.json'
 const app = new App(config)
 

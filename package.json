@@ -10,6 +10,7 @@
     "yarn": "^1.22.0"
   },
   "workspaces": [
-    "anser/controller"
+    "anser/controller",
+    "anser/types"
   ]
 }
