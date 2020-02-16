@@ -2,9 +2,12 @@ import {
 	FunctionLoader,
 	Heartbeat,
 	HeartbeatCommandType,
+	HeartbeatDataAny,
+	HeartbeatDataListFunctions,
 	HeartbeatDataSystemInfo,
 	HeartbeatResponse,
 	logger,
+	strict,
 	SystemInfoData
 } from 'anser-types'
 import { post } from 'request-promise'
@@ -85,19 +88,28 @@ export class AnserWorker {
 	private async processHeartbeatResponse (resp: HeartbeatResponse): Promise<boolean> {
 		if (resp && resp.commands && resp.commands.length) {
 			const actions = resp.commands.map(async (command) => {
+				logger.info(`Received command: ${command.type}`)
+				let data: HeartbeatDataAny | undefined
 				switch(command.type) {
 					case HeartbeatCommandType.SendSystemInfo:
-						logger.info(`Received command: SendSystemInfo`)
-						const data: HeartbeatDataSystemInfo = {
+						data = strict<HeartbeatDataSystemInfo>({
 							command: HeartbeatCommandType.SendSystemInfo,
 							data: await this.getSystemInfo()
-						}
-						if (this._nextHeartbeat.data && this._nextHeartbeat.data.length >= 0) {
-							this._nextHeartbeat.data.push(data)
-						} else {
-							this._nextHeartbeat.data = [data]
-						}
+						})
 						break
+					case HeartbeatCommandType.ListFunctions:
+						data = strict<HeartbeatDataListFunctions>({
+							command: HeartbeatCommandType.ListFunctions,
+							data: Object.keys(this._functionLoader.GetFunctions())
+						})
+						break
+				}
+				if (data) {
+					if (this._nextHeartbeat.data && this._nextHeartbeat.data.length >= 0) {
+						this._nextHeartbeat.data.push(data)
+					} else {
+						this._nextHeartbeat.data = [data]
+					}
 				}
 			})
 			await Promise.all(actions)
