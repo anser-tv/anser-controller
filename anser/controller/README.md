@@ -1,5 +1,9 @@
 [![Build](https://github.com/anser-tv/anser-controller/workflows/Node%20CI/badge.svg)](https://github.com/anser-tv/anser-controller/actions)
 
-# Anser Video Pipeline Management Tool
+# Anser Controller
 
-Anser is a tool for managing the creation, routing and distribution of video streams.
+This package contains the controller for the Anser video pipeline manager.
+
+## How to use (dev)
+
+`yarn && yarn watch`
