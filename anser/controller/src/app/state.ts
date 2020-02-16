@@ -1,14 +1,22 @@
 import {
+	FunctionDescriptionMap,
+	FunctionLoader,
 	Heartbeat,
 	HeartbeatCommand,
+	HeartbeatCommandListFunctions,
 	HeartbeatCommandSendSystemInfo,
 	HeartbeatCommandType,
 	HeartbeatResponse,
 	logger,
 	SystemInfoData
 } from 'anser-types'
+import { strict } from 'anser-types'
+import { isArray } from 'util'
+import { Config } from '../config'
+import { ANSER_VERSION } from './app'
 
 const SYSTEM_INFO_REQUEST_PERIOD = 60 * 1000 // Every minute
+const FUNCTION_LIST_REQUEST_PERIOD = 60 * 60 * 1000 // Every hour
 const STATE_MANAGEMENT_INTERVAL = 1000 // Every second
 const DISCONNECT_TIME = 5000 // Five seconds
 
@@ -26,13 +34,18 @@ export class State {
 	private _heartBeats: { [workerId: string]: Heartbeat[] }
 	private _lastHeartbeat: { [workerId: string]: Heartbeat }
 	private _systemInfo: { [workerId: string]: { lastReceived: Date, data: SystemInfoData } }
+	private _workerFunctionLists: { [workerId: string]: { lastRecieved: Date, functions: FunctionDescriptionMap } }
+	private _functionLoader: FunctionLoader
 	private _runManager: boolean = false
 	private _timeout?: NodeJS.Timeout
 
-	constructor () {
+	constructor (config: Config) {
 		this._heartBeats = { }
 		this._lastHeartbeat = { }
 		this._systemInfo = { }
+		this._workerFunctionLists = { }
+		this._functionLoader = new FunctionLoader(config.functionsDirectory, ANSER_VERSION, logger)
+		logger.info(`Functions: ${JSON.stringify(this._functionLoader.GetFunctions())}`)
 	}
 
 	/**
@@ -79,15 +92,32 @@ export class State {
 						}
 					}
 					break
+				case HeartbeatCommandType.ListFunctions:
+					if (this.isValidListFunctionsData(command.data)) {
+						this._workerFunctionLists[workerId] = {
+							functions: command.data,
+							lastRecieved: new Date()
+						}
+					}
 			}
 		})
 		const commands: HeartbeatCommand[] = []
 		if (this.requestSystemInfo(workerId)) {
-			const systemInfoCommand: HeartbeatCommandSendSystemInfo = {
-				type: HeartbeatCommandType.SendSystemInfo
-			}
-			commands.push(systemInfoCommand)
+			commands.push(
+				strict<HeartbeatCommandSendSystemInfo>({
+					type: HeartbeatCommandType.SendSystemInfo
+				})
+			)
 		}
+
+		if (this.requestFunctionList(workerId)) {
+			commands.push(
+				strict<HeartbeatCommandListFunctions>({
+					type: HeartbeatCommandType.ListFunctions
+				})
+			)
+		}
+
 		return { commands }
 	}
 
@@ -129,6 +159,21 @@ export class State {
 		return Array.from(this._workersRegistered.keys())
 	}
 
+	/**
+	 * Returns the function descriptions compatible with this controller.
+	 */
+	public GetFunctionsKnownToAnser (): FunctionDescriptionMap {
+		return this._functionLoader.GetFunctions()
+	}
+
+	/**
+	 * Returns the function descriptions registered to a particular worker.
+	 * @param workerId Id of worker to get functions for.
+	 */
+	public GetFunctionsForWorker (workerId: string): FunctionDescriptionMap {
+		return this._workerFunctionLists[workerId].functions
+	}
+
 	private requestSystemInfo (workerId: string): boolean {
 		if(!this._systemInfo[workerId]) {
 			return true
@@ -137,6 +182,21 @@ export class State {
 			const now = Date.now()
 
 			if ((now - lastReceived.getTime()) >= SYSTEM_INFO_REQUEST_PERIOD) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	private requestFunctionList (workerId: string): boolean {
+		if(!this._workerFunctionLists[workerId]) {
+			return true
+		} else {
+			const lastReceived = this._workerFunctionLists[workerId].lastRecieved
+			const now = Date.now()
+
+			if ((now - lastReceived.getTime()) >= FUNCTION_LIST_REQUEST_PERIOD) {
 				return true
 			}
 		}
@@ -156,11 +216,17 @@ export class State {
 		return Object.keys(data).sort().toString() === Object.keys(exampleCommand).sort().toString()
 	}
 
+	private isValidListFunctionsData (data: any): boolean {
+		if (isArray(data)) {
+			return !data.some((val) => typeof val !== 'string')
+		}
+
+		return false
+	}
+
 	private manageState (): void {
 		Object.keys(this._lastHeartbeat).forEach((workerId) => {
 			if (this._workersRegistered.get(workerId) === WorkerStatus.ONLINE) {
-				logger.info(Date.now().toString())
-				logger.info(new Date(this._lastHeartbeat[workerId].time).getTime().toString())
 				if (Date.now() - new Date(this._lastHeartbeat[workerId].time).getTime() >= DISCONNECT_TIME) {
 					this._workersRegistered.set(workerId, WorkerStatus.OFFLINE)
 					logger.info(`Worker ${workerId} disconnected. Last seen: ${this._lastHeartbeat[workerId].time}`)

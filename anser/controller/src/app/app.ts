@@ -7,7 +7,7 @@ import { Config, ConfigLoader } from '../config'
 import { LogRequest, LogResponse } from '../logger/logger'
 import { State, WorkerStatus } from './state'
 
-export const API_VERSION = 'v1.0'
+export const ANSER_VERSION = 'v1.0'
 
 /* istanbul ignore next */
 const DEV = process.env.DEV ?? false
@@ -29,7 +29,7 @@ export class App {
 		/* istanbul ignore next */
 		this.config = new ConfigLoader(configFile ?? 'configs').config
 		this.auth = new Auth()
-		this.state = new State()
+		this.state = new State(this.config)
 		this.app = express()
 		this.app.use(express.json())
 		// Perform auth challenge against all routes except '/'
@@ -128,27 +128,31 @@ export class App {
 		 * Used to check if a client is authenticated.
 		 */
 		this.app.get(
-			`/api/${API_VERSION}/auth/check`,
+			`/api/${ANSER_VERSION}/auth/check`,
 			(_req: express.Request, res: express.Response) => {
 				res.status(200).end()
 			}
 		)
 
 		/**
-		 * Gets all workers.
+		 * WORKER ENDPOINT
+		 */
+
+		/**
+		 * Gets the IDs of all workers.
 		 */
 		this.app.get(
-			`/api/${API_VERSION}/workers`,
+			`/api/${ANSER_VERSION}/workers`,
 			(_req: express.Request, res: express.Response) => {
 				res.send(this.state.GetAllWorkers())
 			}
 		)
 
 		/**
-		 * Gets all workers of a given status.
+		 * Gets the IDs of all workers of a given status.
 		 */
 		this.app.get(
-			`/api/${API_VERSION}/workers/status/:status`,
+			`/api/${ANSER_VERSION}/workers/status/:status`,
 			(req: express.Request, res: express.Response) => {
 				if (req.params.status.toUpperCase() in WorkerStatus) {
 					const status = WorkerStatus[req.params.status.toUpperCase() as keyof typeof WorkerStatus]
@@ -159,18 +163,25 @@ export class App {
 			}
 		)
 
+		/**
+		 * Gets the status of a given worker.
+		 */
 		this.app.get(
-			`/api/${API_VERSION}/workers/:workerId/status`,
+			`/api/${ANSER_VERSION}/workers/:workerId/status`,
 			(req: express.Request, res: express.Response) => {
 				res.send({ status: this.state.GetWorkerStatus(req.params.workerId) })
 			}
 		)
 
 		/**
+		 * HEARTBEAT ENDPOINTS
+		 */
+
+		/**
 		 * Gets all heartbeats for a given worker.
 		 */
 		this.app.get(
-			`/api/${API_VERSION}/heartbeats/:workerId`,
+			`/api/${ANSER_VERSION}/heartbeats/:workerId`,
 			(req: express.Request, res: express.Response) => {
 				res.send(this.state.GetAllHearbeatsForWorker(req.params.workerId))
 			}
@@ -183,7 +194,7 @@ export class App {
 		 * 	e.g. Capture devices available.
 		 */
 		this.app.post(
-			`/api/${API_VERSION}/heartbeat/:workerId`,
+			`/api/${ANSER_VERSION}/heartbeat/:workerId`,
 			(req: express.Request, res: express.Response) => {
 				const body = req.body
 				if (!BodyIsHeartbeat(body)) {
@@ -202,6 +213,26 @@ export class App {
 						res.status(200).end()
 					}
 				}
+			}
+		)
+
+		/**
+		 * Gets the IDs of all the functions compatible with this anser controller.
+		 */
+		this.app.get(
+			`/api/${ANSER_VERSION}/functions/anser`,
+			(req: express.Request, res: express.Response) => {
+				res.send(this.state.GetFunctionsKnownToAnser())
+			}
+		)
+
+		/**
+		 * Gets all the functions available on a worker.
+		 */
+		this.app.get(
+			`/api/${ANSER_VERSION}/functions/:workerId`,
+			(req: express.Request, res: express.Response) => {
+				res.send(this.state.GetFunctionsForWorker(req.params.workerId))
 			}
 		)
 	}
