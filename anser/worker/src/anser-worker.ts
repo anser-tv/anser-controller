@@ -16,7 +16,6 @@ import { currentLoad } from 'systeminformation'
 import { mem } from 'systeminformation'
 
 const KEEPALIVE_INTERVAL = 1000
-const API_VERSION = 'v1.0'
 const ANSER_VERSION = 'v1.0'
 
 /**
@@ -59,7 +58,7 @@ export class AnserWorker {
 		logger.info(`Sending heartbeat to ${this._protocol}://${this.controller}/heartbeat/${this.id}`)
 		this._nextHeartbeat.time = new Date()
 		post(
-			`${this._protocol}://${this.controller}/api/${API_VERSION}/heartbeat/${this.id}`,
+			`${this._protocol}://${this.controller}/api/${ANSER_VERSION}/heartbeat/${this.id}`,
 			{ body: this._nextHeartbeat, json: true, resolveWithFullResponse: true }
 		).then((data: { body: HeartbeatResponse }) => {
 			if (!this._connected) {
@@ -100,7 +99,7 @@ export class AnserWorker {
 					case HeartbeatCommandType.ListFunctions:
 						data = strict<HeartbeatDataListFunctions>({
 							command: HeartbeatCommandType.ListFunctions,
-							data: Object.keys(this._functionLoader.GetFunctions())
+							data: this._functionLoader.GetFunctions()
 						})
 						break
 				}

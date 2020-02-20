@@ -6,11 +6,15 @@
   "author": "Tom Lee",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "buildstart:worker": "cd anser/types && yarn build && cd ../worker && yarn build && yarn start"
+  },
   "devDependencies": {
     "yarn": "^1.22.0"
   },
   "workspaces": [
     "anser/controller",
-    "anser/types"
+    "anser/types",
+    "anser/worker"
   ]
 }

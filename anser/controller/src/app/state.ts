@@ -39,12 +39,12 @@ export class State {
 	private _runManager: boolean = false
 	private _timeout?: NodeJS.Timeout
 
-	constructor (config: Config) {
+	constructor (config: Config, delayStart?: boolean) {
 		this._heartBeats = { }
 		this._lastHeartbeat = { }
 		this._systemInfo = { }
 		this._workerFunctionLists = { }
-		this._functionLoader = new FunctionLoader(config.functionsDirectory, ANSER_VERSION, logger)
+		this._functionLoader = new FunctionLoader(config.functionsDirectory, ANSER_VERSION, logger, delayStart)
 		logger.info(`Functions: ${JSON.stringify(this._functionLoader.GetFunctions())}`)
 	}
 

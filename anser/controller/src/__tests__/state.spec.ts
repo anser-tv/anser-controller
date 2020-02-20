@@ -3,7 +3,7 @@ import { State, WorkerStatus } from '../app/state'
 
 describe('state', () => {
 	it ('Adds a heartbeat', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const heartbeat = { time: new Date(), data: [] }
 		state.AddHeartbeat('test-worker', heartbeat)
 		const result1 = (state as any)._workersRegistered
@@ -18,14 +18,14 @@ describe('state', () => {
 
 describe('RequestSystemInfo', () => {
 	it ('Requests when systeminfo has not been logged', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const result = (state as any).requestSystemInfo('test-worker')
 		state.StopManager()
 		expect(result).toBe(true)
 	})
 
 	it('Doesn\'t request systeminfo when systeminfo has been recently added', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const data: SystemInfoData = {
 			cpu_usage_percent: 10,
 			disk_capacity: 30,
@@ -46,7 +46,7 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Requests systeminfo when it\'s been 5 minutes since last recieved', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const data: SystemInfoData = {
 			cpu_usage_percent: 10,
 			disk_capacity: 30,
@@ -66,7 +66,7 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Recognises valid system info data', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const systemInfoData: SystemInfoData = {
 			cpu_usage_percent: 50,
 			disk_capacity: 90,
@@ -80,7 +80,7 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Recognises invalid system info data', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const systemInfoData = {
 			cpu_usage_percent: 50,
 			disk_capacity: 90,
@@ -93,7 +93,7 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Starts manager', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		state.StartManager()
 		const result = (state as any)._runManager
 		state.StopManager()
@@ -101,14 +101,14 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Stops manager', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		state.StartManager()
 		state.StopManager()
 		expect((state as any)._runManager).toBe(false)
 	})
 
 	it('Detects disconnected worker', () => {
-		const state = new State();
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true);
 		(state as any)._lastHeartbeat['dev-worker'] = {
 			time: 0
 		};
@@ -122,7 +122,7 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Does not alert on connected worker', () => {
-		const state = new State();
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true);
 		(state as any)._lastHeartbeat['dev-worker'] = {
 			time: 0
 		};
@@ -136,7 +136,7 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Does not alert on already disconnected worker', () => {
-		const state = new State();
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true);
 		(state as any)._lastHeartbeat['dev-worker'] = {
 			time: 0
 		};
@@ -150,7 +150,7 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Sets new server to online', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const heartbeat = { time: new Date(), data: [] }
 		state.AddHeartbeat('test-worker', heartbeat)
 		const result = (state as any)._workersRegistered
@@ -159,7 +159,7 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Sets reconnected server to online', () => {
-		const state = new State()
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const heartbeat = { time: new Date(), data: [] };
 		(state as any)._workersRegistered.set('test-worker', WorkerStatus.OFFLINE);
 		(state as any)._heartBeats['test-worker'] = []

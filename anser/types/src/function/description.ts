@@ -1,3 +1,4 @@
+import crypto from 'crypto'
 import { ConfigConstraint } from './function'
 
 export enum ConfigType {
@@ -46,6 +47,11 @@ export interface FunctionConfig {
  */
 export interface FunctionDescriptionMap {
 	[id: string]: FunctionDescription
+}
+
+export function IdFromFunction (fnc: FunctionDescription): string {
+	const hash = crypto.createHash('md5').update(JSON.stringify(fnc)).digest('hex')
+	return `${fnc.packageName}:${fnc.name}:${hash}`
 }
 
 /**
