@@ -12,7 +12,8 @@
 		/* Strict Type-Checking Options */
 		"strict": true,
 		"moduleResolution": "node",
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"preserveSymlinks": true
 	},
 	"include": [
 		"src/**/*.ts"
