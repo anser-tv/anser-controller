@@ -80,7 +80,7 @@ export class App {
 			return true
 		}
 
-		const authKey = req.header('auth-key')
+		const authKey = req.header('authKey')
 
 		if (authKey) {
 			if (this.auth.IsAuthorised(authKey, this.config)) {

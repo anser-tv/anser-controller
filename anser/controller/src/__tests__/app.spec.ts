@@ -7,14 +7,14 @@ import { WorkerStatus } from '../app/state'
 
 async function getFromApp (url: string, key: string): Promise<Response> {
 	const app = new App('src/__tests__/__mocks__/config_a.json')
-	const res = await supertest(app.app).get(url).set('auth-key', key)
+	const res = await supertest(app.app).get(url).set('authKey', key)
 	app.Close()
 	return Promise.resolve(res)
 }
 
 async function postToApp (url: string, key: string, body: any): Promise<Response> {
 	const app = new App('src/__tests__/__mocks__/config_a.json')
-	const res = await supertest(app.app).post(url).set('auth-key', key).send(body)
+	const res = await supertest(app.app).post(url).set('authKey', key).send(body)
 	app.Close()
 	return Promise.resolve(res)
 }
@@ -56,7 +56,7 @@ describe('Controller app: Gets all workers', () => {
 		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
 			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
 		)
-		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers`).set('auth-key', 'Hello')
+		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers`).set('authKey', 'Hello')
 		app.Close()
 		expect(res.body).toEqual(['test-worker1', 'test-worker2'])
 	})
@@ -73,7 +73,7 @@ describe('Controller app: Gets all workers of a given status', () => {
 		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
 			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
 		)
-		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/status/online`).set('auth-key', 'Hello')
+		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/status/online`).set('authKey', 'Hello')
 		app.Close()
 		expect(res.body).toEqual(['test-worker1'])
 	})
@@ -83,7 +83,7 @@ describe('Controller app: Gets all workers of a given status', () => {
 		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
 			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
 		)
-		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/status/offline`).set('auth-key', 'Hello')
+		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/status/offline`).set('authKey', 'Hello')
 		app.Close()
 		expect(res.body).toEqual(['test-worker2'])
 	})
@@ -93,7 +93,7 @@ describe('Controller app: Gets all workers of a given status', () => {
 		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
 			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
 		)
-		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/status/not_a_status`).set('auth-key', 'Hello')
+		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/status/not_a_status`).set('authKey', 'Hello')
 		app.Close()
 		expect(res.status).toEqual(400)
 	})
@@ -105,7 +105,7 @@ describe ('Controller app: Gets worker status', () => {
 		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
 			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
 		)
-		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/test-worker1/status`).set('auth-key', 'Hello')
+		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/test-worker1/status`).set('authKey', 'Hello')
 		app.Close()
 		expect(res.body).toEqual({ status: 'ONLINE'})
 	})
@@ -115,7 +115,7 @@ describe ('Controller app: Gets worker status', () => {
 		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
 			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
 		)
-		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/not_a_worker/status`).set('auth-key', 'Hello')
+		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/workers/not_a_worker/status`).set('authKey', 'Hello')
 		app.Close()
 		expect(res.body).toEqual({ status: 'NOT_REGISTERED'})
 	})
@@ -126,7 +126,7 @@ describe('Controller app: Gets all heartbeats for a given worker', () => {
 		const app = new App('src/__tests__/__mocks__/config_a.json')
 		app.state.AddHeartbeat('test-worker', { time: new Date('2020/01/31 00:00:00'), data: [] })
 		app.state.AddHeartbeat('test-worker', { time: new Date('2020/01/31 01:00:00'), data: [] })
-		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/heartbeats/test-worker`).set('auth-key', 'Hello')
+		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/heartbeats/test-worker`).set('authKey', 'Hello')
 		app.Close()
 		expect(res.body).toEqual([
 			{ time: '2020-01-31T00:00:00.000Z', data: [] },
@@ -136,7 +136,7 @@ describe('Controller app: Gets all heartbeats for a given worker', () => {
 
 	it('Returns empty array for non-existant worker', async () => {
 		const app = new App('src/__tests__/__mocks__/config_a.json')
-		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/heartbeats/not_a_worker`).set('auth-key', 'Hello')
+		const res = await supertest(app.app).get(`/api/${ANSER_VERSION}/heartbeats/not_a_worker`).set('authKey', 'Hello')
 		app.Close()
 		expect(res.body).toEqual([])
 	})
@@ -165,7 +165,7 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 		}
 		const app = new App('src/__tests__/__mocks__/config_a.json')
 		const res1 = await supertest(app.app)
-			.post(`/api/${ANSER_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+			.post(`/api/${ANSER_VERSION}/heartbeat/test-worker`).set('authKey', 'Hello').send(heartbeat)
 		heartbeat.data = [{
 			command: HeartbeatCommandType.SendSystemInfo,
 			data: {
@@ -177,7 +177,7 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 			}
 		}]
 		const res2 = await supertest(app.app)
-			.post(`/api/${ANSER_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+			.post(`/api/${ANSER_VERSION}/heartbeat/test-worker`).set('authKey', 'Hello').send(heartbeat)
 		app.Close()
 		expect(res1.status).toEqual(200)
 		expect(res1.body.commands).toContainEqual({ type: HeartbeatCommandType.SendSystemInfo })
@@ -193,13 +193,13 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 		}
 		const app = new App('src/__tests__/__mocks__/config_a.json')
 		const res1 = await supertest(app.app)
-			.post(`/api/${ANSER_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+			.post(`/api/${ANSER_VERSION}/heartbeat/test-worker`).set('authKey', 'Hello').send(heartbeat)
 		heartbeat.data = [{
 			command: HeartbeatCommandType.SendSystemInfo,
 			data: { }
 		}]
 		const res2 = await supertest(app.app)
-		.post(`/api/${ANSER_VERSION}/heartbeat/test-worker`).set('auth-key', 'Hello').send(heartbeat)
+		.post(`/api/${ANSER_VERSION}/heartbeat/test-worker`).set('authKey', 'Hello').send(heartbeat)
 		app.Close()
 		expect(res1.status).toEqual(200)
 		expect(res1.body.commands).toContainEqual({ type: HeartbeatCommandType.SendSystemInfo })

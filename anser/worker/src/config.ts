@@ -2,7 +2,8 @@ import fs from 'fs'
 export interface Config {
 	id: string,
 	controller: string,
-	functionsDirectory: string
+	functionsDirectory: string,
+	authKey: string
 }
 
 /**
@@ -25,6 +26,6 @@ export class ConfigLoader {
 
 	private isValidConfig (config: any): boolean {
 		const keys = Object.keys(config)
-		return keys.indexOf('controller') !== -1 && keys.indexOf('id') !== -1
+		return keys.includes('controller') && keys.includes('id') && keys.includes('authKey')
 	}
 }

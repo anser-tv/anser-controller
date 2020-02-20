@@ -32,16 +32,17 @@ export class AnserWorker {
 
 	constructor (
 		public id: string,
-		public controller: string,
-		public functionDirectory: string,
-		public debug?: boolean
+		private _controller: string,
+		private _functionDirectory: string,
+		private _authKey: string,
+		private _debug?: boolean
 	) {
 		/* istanbul ignore next */
-		if (this.debug) {
+		if (this._debug) {
 			this._protocol = 'http'
 		}
 
-		this._functionLoader = new FunctionLoader(functionDirectory, ANSER_VERSION, logger)
+		this._functionLoader = new FunctionLoader(this._functionDirectory, ANSER_VERSION, logger)
 	}
 
 	/**
@@ -55,11 +56,11 @@ export class AnserWorker {
 
 	/* istanbul ignore next */
 	private keepAlive (): void {
-		logger.info(`Sending heartbeat to ${this._protocol}://${this.controller}/heartbeat/${this.id}`)
+		logger.info(`Sending heartbeat to ${this._protocol}://${this._controller}/api/${ANSER_VERSION}/heartbeat/${this.id}`)
 		this._nextHeartbeat.time = new Date()
 		post(
-			`${this._protocol}://${this.controller}/api/${ANSER_VERSION}/heartbeat/${this.id}`,
-			{ body: this._nextHeartbeat, json: true, resolveWithFullResponse: true }
+			`${this._protocol}://${this._controller}/api/${ANSER_VERSION}/heartbeat/${this.id}`,
+			{ body: this._nextHeartbeat, json: true, resolveWithFullResponse: true, headers: { authKey: this._authKey } }
 		).then((data: { body: HeartbeatResponse }) => {
 			if (!this._connected) {
 				logger.info(`Connected to controller`)
