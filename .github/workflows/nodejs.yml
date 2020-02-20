@@ -21,7 +21,7 @@ jobs:
       run: |
         npm install -g typescript@3.7.2
         yarn
-        yarn test
-        yarn build
+        yarn testall
+        yarn buildall
       env:
         CI: true
