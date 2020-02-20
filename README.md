@@ -1,4 +1,4 @@
-[![Build](https://github.com/anser-tv/anser-controller/workflows/Node%20CI/badge.svg)](https://github.com/anser-tv/anser-controller/actions)
+[![Build](https://github.com/anser-tv/Anser/workflows/Node%20CI/badge.svg)](https://github.com/anser-tv/Anser/actions)
 
 # Anser Video Pipeline Management Tool
 
