@@ -17,7 +17,8 @@
     "startall": "concurrently --kill-others-on-fail \"yarn start:controller\" \"yarn start:worker\"",
     "start:controller": "yarn workspace anser-controller start",
     "start:worker": "yarn workspace anser-worker start",
-    "buildandstart": "yarn buildall:dev && yarn startall"
+    "buildandstart": "yarn buildall:dev && yarn startall",
+    "testall": "yarn workspaces run test"
   },
   "devDependencies": {
     "yarn": "^1.22.0"
