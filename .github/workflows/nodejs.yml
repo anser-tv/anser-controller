@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [12.14.1]
 
     steps:
     - uses: actions/checkout@v1
@@ -19,7 +19,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: yarn install, build, and test
       run: |
-        npm install -g typescript@3.7.2
+        npm install -g ^typescript@3.7.3
         yarn
         yarn testall
         yarn buildall
