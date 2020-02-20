@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn audit && yarn lint && yarn test && tsc",
+    "build:dev": "tsc",
     "buildstart": "yarn build && yarn start",
     "buildstart:dev": "yarn build && DEV=1 yarn start",
     "install-recursive": "yarn-recursive --skipRoot",
