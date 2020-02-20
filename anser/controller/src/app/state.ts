@@ -11,7 +11,7 @@ import {
 	SystemInfoData
 } from 'anser-types'
 import { strict } from 'anser-types'
-import { isArray } from 'util'
+import { FunctionDescription } from 'anser-types'
 import { Config } from '../config'
 import { ANSER_VERSION } from './app'
 
@@ -85,7 +85,7 @@ export class State {
 		heartbeat.data.forEach((command) => {
 			switch(command.command) {
 				case HeartbeatCommandType.SendSystemInfo:
-					if (this.isValidSystemInfoData(command.data)) {
+					if (this.IsValidSystemInfoData(command.data)) {
 						this._systemInfo[workerId] = {
 							data: command.data,
 							lastReceived: new Date()
@@ -93,7 +93,7 @@ export class State {
 					}
 					break
 				case HeartbeatCommandType.ListFunctions:
-					if (this.isValidListFunctionsData(command.data)) {
+					if (this.IsValidListFunctionsData(command.data)) {
 						this._workerFunctionLists[workerId] = {
 							functions: command.data,
 							lastRecieved: new Date()
@@ -174,6 +174,52 @@ export class State {
 		return this._workerFunctionLists[workerId].functions
 	}
 
+	/**
+	 * Returns true if data is a valid function description map.
+	 * @param data Map to validate.
+	 */
+	public IsValidListFunctionsData (data: FunctionDescriptionMap): boolean {
+		if (data === null || typeof data !== 'object') return false
+
+		if (!data) return false
+
+		const exampleFunction: FunctionDescription = {
+			author: '',
+			config: [],
+			inputs: [],
+			main: '',
+			name: '',
+			outputs: [],
+			packageName: '',
+			targetVersion: '',
+			version: ''
+		}
+
+		for (const key of Object.keys(data)) {
+			if (Object.keys(data[key]).sort().toString() !== Object.keys(exampleFunction).sort().toString()) {
+				return false
+			}
+		}
+
+		return true
+	}
+
+	/**
+	 * Returns true if data is valid system info data.
+	 * @param data Data to validate.
+	 */
+	public IsValidSystemInfoData (data: SystemInfoData): boolean {
+		const exampleCommand: SystemInfoData = {
+			cpu_usage_percent: 50,
+			disk_capacity: 90,
+			disk_usage: 40,
+			ram_available: 30,
+			ram_used: 25
+		}
+
+		return Object.keys(data).sort().toString() === Object.keys(exampleCommand).sort().toString()
+	}
+
 	private requestSystemInfo (workerId: string): boolean {
 		if(!this._systemInfo[workerId]) {
 			return true
@@ -199,26 +245,6 @@ export class State {
 			if ((now - lastReceived.getTime()) >= FUNCTION_LIST_REQUEST_PERIOD) {
 				return true
 			}
-		}
-
-		return false
-	}
-
-	private isValidSystemInfoData (data: any): boolean {
-		const exampleCommand: SystemInfoData = {
-			cpu_usage_percent: 50,
-			disk_capacity: 90,
-			disk_usage: 40,
-			ram_available: 30,
-			ram_used: 25
-		}
-
-		return Object.keys(data).sort().toString() === Object.keys(exampleCommand).sort().toString()
-	}
-
-	private isValidListFunctionsData (data: any): boolean {
-		if (isArray(data)) {
-			return !data.some((val) => typeof val !== 'string')
 		}
 
 		return false

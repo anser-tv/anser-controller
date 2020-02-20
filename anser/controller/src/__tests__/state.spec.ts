@@ -1,5 +1,6 @@
-import { SystemInfoData } from 'anser-types'
+import { FunctionDescriptionMap, strict, SystemInfoData } from 'anser-types'
 import { State, WorkerStatus } from '../app/state'
+import { FunctionDescription } from './../../../types/src/function/description'
 
 describe('state', () => {
 	it ('Adds a heartbeat', () => {
@@ -74,20 +75,20 @@ describe('RequestSystemInfo', () => {
 			ram_available: 30,
 			ram_used: 25
 		}
-		const result = (state as any).isValidSystemInfoData(systemInfoData)
+		const result = state.IsValidSystemInfoData(systemInfoData)
 		state.StopManager()
 		expect(result).toBe(true)
 	})
 
 	it('Recognises invalid system info data', () => {
 		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
-		const systemInfoData = {
+		const systemInfoData: Omit<SystemInfoData, 'ram_used'> = {
 			cpu_usage_percent: 50,
 			disk_capacity: 90,
 			disk_usage: 40,
 			ram_available: 30
 		}
-		const result = (state as any).isValidSystemInfoData(systemInfoData)
+		const result = state.IsValidSystemInfoData(systemInfoData as any)
 		state.StopManager()
 		expect(result).toBe(false)
 	})
@@ -167,5 +168,50 @@ describe('RequestSystemInfo', () => {
 		const result = (state as any)._workersRegistered
 		state.StopManager()
 		expect(result).toEqual(new Map([['test-worker', WorkerStatus.ONLINE]]))
+	})
+
+	it('Recognises valid system info data', () => {
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
+		const systemInfoData: FunctionDescriptionMap = {
+			somehash: {
+				author: '',
+				config: [],
+				inputs: [],
+				main: '',
+				name: '',
+				outputs: [],
+				packageName: '',
+				targetVersion: '',
+				version: ''
+			}
+		}
+		const result = state.IsValidListFunctionsData(systemInfoData)
+		state.StopManager()
+		expect(result).toBe(true)
+	})
+
+	it('Recognises invalid system info data', () => {
+		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
+		const systemInfoData: FunctionDescriptionMap = {
+			somehash: strict<Omit<FunctionDescription, 'version'>>({
+				author: '',
+				config: [],
+				inputs: [],
+				main: '',
+				name: '',
+				outputs: [],
+				packageName: '',
+				targetVersion: ''
+			}) as any
+		}
+		const result1 = state.IsValidListFunctionsData(null as any)
+		const result2 = state.IsValidListFunctionsData('func' as any)
+		const result3 = state.IsValidListFunctionsData(undefined as any)
+		const result4 = state.IsValidListFunctionsData(systemInfoData)
+		state.StopManager()
+		expect(result1).toBe(false)
+		expect(result2).toBe(false)
+		expect(result3).toBe(false)
+		expect(result4).toBe(false)
 	})
 })
