@@ -7,14 +7,19 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "buildstart:worker": "cd anser/types && yarn build && cd ../worker && yarn build && yarn start"
+    "build:types": "yarn workspace anser-types build",
+    "build:worker": "yarn build:types && yarn workspace anser-worker build",
+    "build:controller": "yarn build:types && yarn workspace anser-controller build",
+    "buildall": "yarn workspaces run build",
+    "buildstart:controller": "yarn workspace anser-types build:dev && yarn workspace anser-controller buildstart",
+    "buildstart:worker": "yarn workspace anser-types build:dev && yarn workspace anser-worker buildstart"
   },
   "devDependencies": {
     "yarn": "^1.22.0"
   },
   "workspaces": [
-    "anser/controller",
     "anser/types",
+    "anser/controller",
     "anser/worker"
   ]
 }
