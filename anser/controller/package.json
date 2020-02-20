@@ -10,11 +10,12 @@
     "build": "yarn audit && yarn lint && yarn test && tsc",
     "build:dev": "tsc",
     "buildstart": "yarn build && yarn start",
-    "buildstart:dev": "yarn build && DEV=1 yarn start",
+    "buildstart:dev": "yarn build && yarn start:dev",
     "install-recursive": "yarn-recursive --skipRoot",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
     "postinstall": "yarn install-recursive",
     "start": "node dist/index.js",
+    "start:dev": "DEV=1 yarn start",
     "test": "yarn lint && jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
     "watch": "nodemon"
   },

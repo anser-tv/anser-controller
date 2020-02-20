@@ -15,9 +15,13 @@
     "buildstart:controller": "yarn workspace anser-types build:dev && yarn workspace anser-controller buildstart",
     "buildstart:worker": "yarn workspace anser-types build:dev && yarn workspace anser-worker buildstart",
     "startall": "concurrently --kill-others-on-fail \"yarn start:controller\" \"yarn start:worker\"",
+    "startall:dev": "concurrently --kill-others-on-fail \"yarn start:controller:dev\" \"yarn start:worker:dev\"",
     "start:controller": "yarn workspace anser-controller start",
+    "start:controller:dev": "yarn workspace anser-controller start:dev",
     "start:worker": "yarn workspace anser-worker start",
+    "start:worker:dev": "yarn workspace anser-worker start:dev",
     "buildandstart": "yarn buildall:dev && yarn startall",
+    "buildandstart:dev": "yarn buildall:dev && yarn startall:dev",
     "testall": "yarn workspaces run test"
   },
   "devDependencies": {
