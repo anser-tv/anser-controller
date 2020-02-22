@@ -1,12 +1,13 @@
 {
   "name": "anser-function-stream-video-from-file",
   "version": "1.0.0",
-  "description": "Anser function to stream video from a file",
+  "description": "Anser function to run generic gstreamer pipelines",
   "main": "index.js",
   "author": "Tom Lee",
   "license": "MIT",
   "scripts": {
     "build": "yarn audit && yarn lint && yarn test && tsc",
+    "build:dev": "tsc",
     "buildstart": "yarn build && yarn start",
     "buildstart:dev": "tsc && DEV=1 yarn start",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
@@ -28,7 +29,8 @@
     "yarn": "^1.22.0"
   },
   "dependencies": {
-    "anser-types": "git+https://github.com/anser-tv/anser-types.git#master",
+    "anser-types": "1.0.0",
+    "gstreamer-superficial": "^1.3.1",
     "winston": "3.2.1"
   },
   "nodemonConfig": {
@@ -46,22 +48,22 @@
   },
   "anser": [
     {
-        "description": {
-            "targetVersion": "v1.0",
-            "name": "Anser Generic GStreamer Function",
-            "author": "Tom Lee",
-            "version": "v1.0",
-            "mainFile": "dist/index.js",
-            "config": [
-                {
-                    "name": "pipeline",
-                    "id": "pipeline",
-                    "type": "string"
-                }
-            ],
-            "inputs": [],
-            "outputs": []
-        }
+      "description": {
+        "targetVersion": "v1.0",
+        "name": "Anser Generic GStreamer Function",
+        "author": "Tom Lee",
+        "version": "v1.0",
+        "mainFile": "dist/index.js",
+        "config": [
+          {
+            "name": "pipeline",
+            "id": "pipeline",
+            "type": "string"
+          }
+        ],
+        "inputs": [],
+        "outputs": []
+      }
     }
   ]
 }

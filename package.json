@@ -29,6 +29,7 @@
   },
   "workspaces": [
     "anser/types",
+    "anser/anser-function-gstreamer",
     "anser/controller",
     "anser/worker"
   ],
