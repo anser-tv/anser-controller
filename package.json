@@ -43,5 +43,25 @@
     ],
     "exec": "yarn lint && tsc && DEV=true node dist/index.js",
     "ext": "ts"
-  }
+  },
+  "anser": [
+    {
+        "description": {
+            "targetVersion": "v1.0",
+            "name": "Anser Generic GStreamer Function",
+            "author": "Tom Lee",
+            "version": "v1.0",
+            "mainFile": "dist/index.js",
+            "config": [
+                {
+                    "name": "pipeline",
+                    "id": "pipeline",
+                    "type": "string"
+                }
+            ],
+            "inputs": [],
+            "outputs": []
+        }
+    }
+  ]
 }

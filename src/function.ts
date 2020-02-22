@@ -1,4 +1,13 @@
-import { AnserFunction, FunctionConfig, FunctionDescription, FunctionRunConfig, FunctionStatus, VideoIO } from 'anser-types'
+import {
+	AnserFunction,
+	ConfigConstraint,
+	ConfigConstraintString,
+	ConfigContraintType,
+	FunctionDescription,
+	FunctionRunConfig,
+	FunctionStatus,
+	strict
+} from 'anser-types'
 import * as gstreamer from 'gstreamer-superficial'
 import winston = require('winston')
 
@@ -23,6 +32,18 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	}
 
 	/**
+	 * Gets the config options.
+	 * @param field Field name.
+	 */
+	public GetConfigOptionsForField (field: string): ConfigConstraint | void {
+		if (field.match(/pipeline/i)) {
+			return strict<ConfigConstraintString>({
+				type: ConfigContraintType.STRING
+			})
+		}
+	}
+
+	/**
 	 * Stops the pipeline.
 	 */
 	public Stop (): Promise<boolean> {
@@ -38,6 +59,9 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	 */
 	public Validate (): boolean {
 		return !!this.config.pipeline
+	}
+	protected validate (): boolean {
+		throw new Error('Method not implemented.')
 	}
 
 	protected start (): Promise<boolean> {
