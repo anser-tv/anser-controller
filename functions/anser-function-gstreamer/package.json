@@ -1,8 +1,8 @@
 {
-  "name": "anser-function-stream-video-from-file",
+  "name": "anser-function-gstreamer",
   "version": "1.0.0",
   "description": "Anser function to run generic gstreamer pipelines",
-  "main": "index.js",
+  "main": "dist/index.js",
   "author": "Tom Lee",
   "license": "MIT",
   "scripts": {
@@ -46,24 +46,20 @@
     "exec": "yarn lint && tsc && DEV=true node dist/index.js",
     "ext": "ts"
   },
-  "anser": [
-    {
-      "description": {
-        "targetVersion": "v1.0",
-        "name": "Anser Generic GStreamer Function",
-        "author": "Tom Lee",
-        "version": "v1.0",
-        "mainFile": "dist/index.js",
-        "config": [
-          {
-            "name": "pipeline",
-            "id": "pipeline",
-            "type": "string"
-          }
-        ],
-        "inputs": [],
-        "outputs": []
+  "anser": {
+    "targetVersion": "v1.0",
+    "name": "Anser Generic GStreamer Function",
+    "author": "Tom Lee",
+    "version": "v1.0",
+    "mainFile": "dist/index.js",
+    "config": [
+      {
+        "name": "pipeline",
+        "id": "pipeline",
+        "type": "string"
       }
-    }
-  ]
+    ],
+    "inputs": [],
+    "outputs": []
+  }
 }

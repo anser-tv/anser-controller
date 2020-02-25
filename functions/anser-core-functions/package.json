@@ -1,0 +1,9 @@
+{
+  "name": "anser-core-functions",
+  "version": "1.0.0",
+  "description": "Collection of supported functions for the Anser video pipeline management tool",
+  "main": "index.js",
+  "repository": "https://github.com/anser-tv/Anser",
+  "author": "Tom Lee",
+  "license": "MIT"
+}

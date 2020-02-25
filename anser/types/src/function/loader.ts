@@ -82,10 +82,15 @@ export class FunctionLoader {
 				}
 
 				dependencies.forEach((dep) => {
-					const functionPath = path.join(this.functionDirectory, 'node_modules', dep, this.packageName)
-					if (!this.IsAnserPackage(functionPath)) return
+					const functionPath = path.join(this.functionDirectory, 'node_modules', dep)
+					this.logger.info(functionPath)
+					if (!this.IsAnserPackage(path.join(process.cwd(), functionPath, this.packageName))) {
+						this.logger.info(`Not a valid anser package`)
+						return
+					}
 
 					const funcs =  this.loadFunctionsFromFile(functionPath)
+					this.logger.info(JSON.stringify(funcs))
 
 					if (funcs) this.loadedFunctions = { ...this.loadedFunctions, ...funcs }
 				})
@@ -121,6 +126,7 @@ export class FunctionLoader {
 	 * @param packagePath Path to package.json
 	 */
 	public IsAnserPackage (packagePath: string): boolean {
+		this.logger.info(packagePath)
 		if (fs.existsSync(packagePath)) {
 			const file: FunctionPackageFile =
 				JSON.parse(fs.readFileSync(packagePath).toString('utf-8'))
@@ -130,13 +136,15 @@ export class FunctionLoader {
 			}
 		}
 
+		this.logger.info(`File does not exist`)
 		return false
 	}
 
 	private loadFunctionsFromFile /* istanbul ignore next */ (functionPath: string): FunctionDescriptionMap | undefined {
 		/* istanbul ignore next */
-		if (fs.existsSync(functionPath)) {
-			const file: FunctionPackageFile = JSON.parse(fs.readFileSync(functionPath).toString('utf-8'))
+		const packageFile = path.join(functionPath, this.packageName)
+		if (fs.existsSync(packageFile)) {
+			const file: FunctionPackageFile = JSON.parse(fs.readFileSync(packageFile).toString('utf-8'))
 			if (this.validateFile(file) && this.isCompatible(file.anser!.targetVersion!)) {
 				return this.parseFromFile(file, functionPath)
 			}
@@ -151,7 +159,7 @@ export class FunctionLoader {
 
 		/* istanbul ignore next */
 		if (file.main) {
-			descriptions = this.getFunctionsFromManifest(`/${functionPath}/${file.main}`)
+			descriptions = this.getFunctionsFromManifest(`${functionPath}/${file.main}`)
 		}
 
 		/* istanbul ignore next */
@@ -160,7 +168,13 @@ export class FunctionLoader {
 
 	private getFunctionsFromManifest /* istanbul ignore next */ (manifestPath: string): FunctionDescriptionMap {
 		/* istanbul ignore next */
-		const manifest = require(manifestPath) as AnserManifest
+		this.logger.info(`Requiring ${path.join(process.cwd(), manifestPath)}`)
+		const manifest = require(path.join(process.cwd(), manifestPath)) as AnserManifest | undefined
+
+		if (!manifest) return { }
+
+		console.log(JSON.stringify(manifest))
+
 		/* istanbul ignore next */
 		return manifest.GetFunctions()
 	}
