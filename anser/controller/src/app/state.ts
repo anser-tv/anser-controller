@@ -171,7 +171,7 @@ export class State {
 	 * @param workerId Id of worker to get functions for.
 	 */
 	public GetFunctionsForWorker (workerId: string): FunctionDescriptionMap {
-		return this._workerFunctionLists[workerId].functions
+		return this._workerFunctionLists[workerId] ? this._workerFunctionLists[workerId].functions : { }
 	}
 
 	/**
