@@ -16,7 +16,7 @@ import { currentLoad } from 'systeminformation'
 import { mem } from 'systeminformation'
 
 const KEEPALIVE_INTERVAL = 1000
-const ANSER_VERSION = 'v1.0'
+const ANSER_VERSION = '1.0.0'
 
 /**
  * Represents a worker.
@@ -56,11 +56,16 @@ export class AnserWorker {
 
 	/* istanbul ignore next */
 	private keepAlive (): void {
-		logger.info(`Sending heartbeat to ${this._protocol}://${this._controller}/api/${ANSER_VERSION}/heartbeat/${this.id}`)
+		logger.info(`Sending heartbeat to ${this._protocol}://${this._controller}/anser/heartbeat/${this.id}`)
 		this._nextHeartbeat.time = new Date()
 		post(
-			`${this._protocol}://${this._controller}/api/${ANSER_VERSION}/heartbeat/${this.id}`,
-			{ body: this._nextHeartbeat, json: true, resolveWithFullResponse: true, headers: { authKey: this._authKey } }
+			`${this._protocol}://${this._controller}/anser/heartbeat/${this.id}`,
+			{
+				body: this._nextHeartbeat,
+				json: true,
+				resolveWithFullResponse: true,
+				headers: { authKey: this._authKey, targetVersion: ANSER_VERSION }
+			}
 		).then((data: { body: HeartbeatResponse }) => {
 			if (!this._connected) {
 				logger.info(`Connected to controller`)

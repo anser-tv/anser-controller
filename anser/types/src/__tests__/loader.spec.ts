@@ -3,13 +3,13 @@ import { logger } from '../logger/logger'
 
 describe('Function Loader', () => {
 	it ('Accepts compatible versions', () => {
-		const loader = new FunctionLoader('', 'v1.0', logger, true)
-		expect((loader as any).isCompatible('v1.0')).toBe(true)
+		const loader = new FunctionLoader('', '1.0.0', logger, true)
+		expect((loader as any).isCompatible('1.0.0')).toBe(true)
 	})
 
 	it ('Rejects incompatible versions', () => {
-		const loader = new FunctionLoader('', 'v0.0', logger, true)
-		expect((loader as any).isCompatible('v1.0')).toBe(false)
+		const loader = new FunctionLoader('', '0.0.0', logger, true)
+		expect((loader as any).isCompatible('1.0.0')).toBe(false)
 	})
 
 	it ('Requires both main, anser, and version', () => {

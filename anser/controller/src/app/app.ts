@@ -1,4 +1,4 @@
-import { BodyIsHeartbeat, Heartbeat, logger } from 'anser-types'
+import { BodyIsHeartbeat, Heartbeat, logger, VersionsAreCompatible } from 'anser-types'
 import express from 'express'
 import http from 'http'
 import https from 'https'
@@ -7,7 +7,7 @@ import { Config, ConfigLoader } from '../config'
 import { LogRequest, LogResponse } from '../logger/logger'
 import { State, WorkerStatus } from './state'
 
-export const ANSER_VERSION = 'v1.0'
+export const ANSER_VERSION = '1.0.0'
 
 /* istanbul ignore next */
 const DEV = process.env.DEV ?? false
@@ -36,6 +36,7 @@ export class App {
 		this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
 			if (!req.url.match(/^\/$/)) {
 				this.authenticationChallenge(req, res, next)
+				this.versionCheck(req, res, next)
 			} else {
 				LogRequest(req, logger)
 				next()
@@ -91,6 +92,22 @@ export class App {
 		return false
 	}
 
+	private anserVersionIsCompatible (req: express.Request): boolean {
+		const targetVersion = req.header('targetVersion')
+
+		if (!targetVersion) {
+			logger.info(`Anser version not specified`)
+			return false
+		}
+
+		if (VersionsAreCompatible(targetVersion, ANSER_VERSION)) {
+			return true
+		} else {
+			logger.info(`Incompatible Anser version "${targetVersion}"`)
+			return false
+		}
+	}
+
 	private denyAccess (res: express.Response): void {
 		res.status(401).send('Access Denied')
 		LogResponse ('Access Denied', logger)
@@ -104,6 +121,15 @@ export class App {
 		} else {
 			logger.debug(`Client is authenticated ${req.ip}`)
 			next()
+		}
+	}
+
+	private versionCheck (req: express.Request, res: express.Response, next: express.NextFunction): void {
+		LogRequest(req, logger)
+		if (this.anserVersionIsCompatible(req)) {
+			next()
+		} else {
+			res.status(400).send(`Incompatible Anser version, controller version is ${ANSER_VERSION}`)
 		}
 	}
 
@@ -128,7 +154,7 @@ export class App {
 		 * Used to check if a client is authenticated.
 		 */
 		this.app.get(
-			`/api/${ANSER_VERSION}/auth/check`,
+			`/anser/auth/check`,
 			(_req: express.Request, res: express.Response) => {
 				res.status(200).end()
 			}
@@ -142,7 +168,7 @@ export class App {
 		 * Gets the IDs of all workers.
 		 */
 		this.app.get(
-			`/api/${ANSER_VERSION}/workers`,
+			`/anser/workers`,
 			(_req: express.Request, res: express.Response) => {
 				res.send(this.state.GetAllWorkers())
 			}
@@ -152,7 +178,7 @@ export class App {
 		 * Gets the IDs of all workers of a given status.
 		 */
 		this.app.get(
-			`/api/${ANSER_VERSION}/workers/status/:status`,
+			`/anser/workers/status/:status`,
 			(req: express.Request, res: express.Response) => {
 				if (req.params.status.toUpperCase() in WorkerStatus) {
 					const status = WorkerStatus[req.params.status.toUpperCase() as keyof typeof WorkerStatus]
@@ -167,7 +193,7 @@ export class App {
 		 * Gets the status of a given worker.
 		 */
 		this.app.get(
-			`/api/${ANSER_VERSION}/workers/:workerId/status`,
+			`/anser/workers/:workerId/status`,
 			(req: express.Request, res: express.Response) => {
 				res.send({ status: this.state.GetWorkerStatus(req.params.workerId) })
 			}
@@ -181,7 +207,7 @@ export class App {
 		 * Gets all heartbeats for a given worker.
 		 */
 		this.app.get(
-			`/api/${ANSER_VERSION}/heartbeats/:workerId`,
+			`/anser/heartbeats/:workerId`,
 			(req: express.Request, res: express.Response) => {
 				res.send(this.state.GetAllHearbeatsForWorker(req.params.workerId))
 			}
@@ -194,7 +220,7 @@ export class App {
 		 * 	e.g. Capture devices available.
 		 */
 		this.app.post(
-			`/api/${ANSER_VERSION}/heartbeat/:workerId`,
+			`/anser/heartbeat/:workerId`,
 			(req: express.Request, res: express.Response) => {
 				const body = req.body
 				if (!BodyIsHeartbeat(body)) {
@@ -220,8 +246,8 @@ export class App {
 		 * Gets the IDs of all the functions compatible with this anser controller.
 		 */
 		this.app.get(
-			`/api/${ANSER_VERSION}/functions/anser`,
-			(req: express.Request, res: express.Response) => {
+			`/anser/functions/anser`,
+			(_req: express.Request, res: express.Response) => {
 				res.send(this.state.GetFunctionsKnownToAnser())
 			}
 		)
@@ -230,7 +256,7 @@ export class App {
 		 * Gets all the functions available on a worker.
 		 */
 		this.app.get(
-			`/api/${ANSER_VERSION}/functions/:workerId`,
+			`/anser/functions/:workerId`,
 			(req: express.Request, res: express.Response) => {
 				res.send(this.state.GetFunctionsForWorker(req.params.workerId))
 			}

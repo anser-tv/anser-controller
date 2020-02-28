@@ -7,13 +7,11 @@
   "author": "Tom Lee",
   "license": "MIT",
   "scripts": {
-    "build": "yarn audit && yarn lint && yarn test && tsc",
-    "build:dev": "tsc",
+    "build": "yarn audit && yarn lint && yarn test && rimraf dist && tsc",
+    "build:dev": "rimraf dist && tsc",
     "buildstart": "yarn build && yarn start",
     "buildstart:dev": "yarn build:dev && yarn start:dev",
-    "install-recursive": "yarn-recursive --skipRoot",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
-    "postinstall": "yarn install-recursive",
     "start": "node dist/index.js",
     "start:dev": "DEV=1 yarn start",
     "test": "yarn lint && jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
@@ -29,12 +27,12 @@
     "eslint-plugin-import": "^2.18.2",
     "jest": "^24.8.0",
     "nodemon": "^1.19.1",
+    "rimraf": "^3.0.2",
     "ts-jest": "^24.1.0",
     "ts-node": "^8.5.0",
     "tslint": "^5.20.1",
     "typescript": "^3.7.5",
-    "yarn": "^1.22.0",
-    "yarn-recursive": "^1.1.0"
+    "yarn": "^1.22.0"
   },
   "dependencies": {
     "anser-types": "1.0.0",

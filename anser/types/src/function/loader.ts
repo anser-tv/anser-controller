@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import winston = require('winston')
+import { VersionsAreCompatible } from '../..'
 import { logger as anserLogger } from '../logger/logger'
 import { AnserManifest } from './anser-manifest'
 import { FunctionDescriptionMap } from './description'
@@ -159,7 +160,7 @@ export class FunctionLoader {
 
 		/* istanbul ignore next */
 		if (file.main) {
-			descriptions = this.getFunctionsFromManifest(`${functionPath}/${file.main}`)
+			descriptions = this.getFunctionsFromManifest(path.join(functionPath, file.main))
 		}
 
 		/* istanbul ignore next */
@@ -172,8 +173,6 @@ export class FunctionLoader {
 		const manifest = require(path.join(process.cwd(), manifestPath)) as AnserManifest | undefined
 
 		if (!manifest) return { }
-
-		console.log(JSON.stringify(manifest))
 
 		/* istanbul ignore next */
 		return manifest.GetFunctions()
@@ -188,6 +187,6 @@ export class FunctionLoader {
 	 * @param functionAnserVersion
 	 */
 	private isCompatible (functionAnserVersion: string): boolean {
-		return functionAnserVersion.toUpperCase() === this.anserVersion.toUpperCase()
+		return VersionsAreCompatible(functionAnserVersion, this.anserVersion)
 	}
 }

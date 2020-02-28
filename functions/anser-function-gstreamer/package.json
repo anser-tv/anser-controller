@@ -47,10 +47,10 @@
     "ext": "ts"
   },
   "anser": {
-    "targetVersion": "v1.0",
+    "targetVersion": "1.0.0",
     "name": "Anser Generic GStreamer Function",
     "author": "Tom Lee",
-    "version": "v1.0",
+    "version": "1.0.0",
     "mainFile": "dist/index.js",
     "config": [
       {
