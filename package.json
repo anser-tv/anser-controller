@@ -2,7 +2,7 @@
   "name": "anser",
   "version": "1.0.0",
   "description": "Anser video pipeline management tool",
-  "main": "index.js",
+  "main": "dist/index.js",
   "author": "Tom Lee",
   "license": "MIT",
   "private": true,
