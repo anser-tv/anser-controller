@@ -1,4 +1,4 @@
-import { BodyIsHeartbeat, Heartbeat, logger, VersionsAreCompatible } from 'anser-types'
+import { BodyIsHeartbeat, BodyIsJobStartRequest, Heartbeat, logger, VersionsAreCompatible } from 'anser-types'
 import express from 'express'
 import http from 'http'
 import https from 'https'
@@ -259,6 +259,18 @@ export class App {
 			`/anser/functions/:workerId`,
 			(req: express.Request, res: express.Response) => {
 				res.send(this.state.GetFunctionsForWorker(req.params.workerId))
+			}
+		)
+
+		this.app.post(
+			`/anser/jobs/start/worker/:workerId`,
+			(req: express.Request, res: express.Response) => {
+				if (!BodyIsJobStartRequest(req.body)) {
+					this.sendBadRequest(res, `Invalid function`)
+				} else {
+					const result = this.state.StartJobOnWorker(req.params.workerId, req.body)
+					res.send(result)
+				}
 			}
 		)
 	}

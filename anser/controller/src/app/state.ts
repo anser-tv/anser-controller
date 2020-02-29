@@ -1,4 +1,5 @@
 import {
+	FunctionDescription,
 	FunctionDescriptionMap,
 	FunctionLoader,
 	Heartbeat,
@@ -7,11 +8,13 @@ import {
 	HeartbeatCommandSendSystemInfo,
 	HeartbeatCommandType,
 	HeartbeatResponse,
+	JobStartRequest,
+	JobStartRequestResponse,
+	JobStatus,
 	logger,
+	strict,
 	SystemInfoData
 } from 'anser-types'
-import { strict } from 'anser-types'
-import { FunctionDescription } from 'anser-types'
 import { Config } from '../config'
 import { ANSER_VERSION } from './app'
 
@@ -218,6 +221,19 @@ export class State {
 		}
 
 		return Object.keys(data).sort().toString() === Object.keys(exampleCommand).sort().toString()
+	}
+
+	/**
+	 * Starts a job on a targeted worker.
+	 * @param workerId Worker to start job on.
+	 * @param req Job to start.
+	 */
+	public StartJobOnWorker (workerId: string, req: JobStartRequest): JobStartRequestResponse {
+		const worker = this._workersRegistered.get(workerId)
+
+		if (!worker) return { status: JobStatus.FAILED_TO_START, details: `Worker ${workerId} does not exist` }
+
+		return { status: JobStatus.STARTING, details: '' }
 	}
 
 	private requestSystemInfo (workerId: string): boolean {

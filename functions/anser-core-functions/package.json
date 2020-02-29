@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
+    "build:dev": "tsc",
     "test": "jest --passWithNoTests"
   },
   "devDependencies": {

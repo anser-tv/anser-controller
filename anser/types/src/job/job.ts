@@ -1,8 +1,43 @@
 import { FunctionConfig, VideoIO } from '../function/description'
+import { FunctionRunConfig } from '../function/function'
 
 export enum TargetType {
 	WORKER = 'WORKER',
 	GROUP = 'GROUP'
+}
+
+export enum JobStatus {
+	UNKNOWN = 'UNKNOWN',
+	QUEUED = 'QUEUED',
+	STARTING = 'STARTING',
+	FAILED_TO_START = 'FAILED_TO_START',
+	RUNNING = 'RUNNING',
+	FAILED = 'FAILED',
+	STOPPED = 'STOPPED',
+	COMPLETED = 'COMPLETED'
+}
+
+export interface JobStartRequest {
+	functionId: string
+	config: FunctionRunConfig
+	inputs: { [id: string]: string }
+	outputs: { [id: string]: string }
+}
+
+export interface JobStartRequestResponse {
+	status: JobStatus
+	details: string
+}
+
+export function BodyIsJobStartRequest (body: any): boolean {
+	const template: JobStartRequest = {
+		functionId: '',
+		inputs: { },
+		outputs: { },
+		config: { }
+	}
+
+	return Object.keys(body).sort().toString() === Object.keys(template).sort().toString()
 }
 
 /**
