@@ -1,14 +1,14 @@
 import {
 	FunctionLoader,
 	Heartbeat,
-	HeartbeatCommandType,
 	HeartbeatDataAny,
 	HeartbeatDataListFunctions,
 	HeartbeatDataSystemInfo,
 	HeartbeatResponse,
 	logger,
 	strict,
-	SystemInfoData
+	SystemInfoData,
+	WorkerCommandType
 } from 'anser-types'
 import { post } from 'request-promise'
 import { fsSize } from 'systeminformation'
@@ -27,7 +27,7 @@ export class AnserWorker {
 	private _protocol: string = 'https'
 	private _running: boolean = false
 	private _connected: boolean = false
-	private _nextHeartbeat: Heartbeat = { time: new Date(), data: [] }
+	private _nextHeartbeat: Heartbeat = { time: Date.now(), data: [] }
 	private _functionLoader: FunctionLoader
 
 	constructor (
@@ -57,7 +57,7 @@ export class AnserWorker {
 	/* istanbul ignore next */
 	private keepAlive (): void {
 		logger.info(`Sending heartbeat to ${this._protocol}://${this._controller}/anser/heartbeat/${this.id}`)
-		this._nextHeartbeat.time = new Date()
+		this._nextHeartbeat.time = Date.now()
 		post(
 			`${this._protocol}://${this._controller}/anser/heartbeat/${this.id}`,
 			{
@@ -96,15 +96,15 @@ export class AnserWorker {
 				logger.info(`Received command: ${command.type}`)
 				let data: HeartbeatDataAny | undefined
 				switch(command.type) {
-					case HeartbeatCommandType.SendSystemInfo:
+					case WorkerCommandType.SendSystemInfo:
 						data = strict<HeartbeatDataSystemInfo>({
-							command: HeartbeatCommandType.SendSystemInfo,
+							command: WorkerCommandType.SendSystemInfo,
 							data: await this.getSystemInfo()
 						})
 						break
-					case HeartbeatCommandType.ListFunctions:
+					case WorkerCommandType.ListFunctions:
 						data = strict<HeartbeatDataListFunctions>({
-							command: HeartbeatCommandType.ListFunctions,
+							command: WorkerCommandType.ListFunctions,
 							data: this._functionLoader.GetFunctions()
 						})
 						break
@@ -146,6 +146,6 @@ export class AnserWorker {
 
 	/* istanbul ignore next */
 	private resetHeartbeat (): void {
-		this._nextHeartbeat = { time: new Date(), data: [] }
+		this._nextHeartbeat = { time: Date.now(), data: [] }
 	}
 }

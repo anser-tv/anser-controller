@@ -1,13 +1,13 @@
 import { FunctionDescriptionMap } from './function/description'
-import { HeartbeatCommand, HeartbeatCommandType } from './heartbeat-commands/heartbeat-commands'
+import { WorkerCommand, WorkerCommandType } from './worker-commands/worker-commands'
 
 export interface Heartbeat {
-	time: Date,
+	time: number,
 	data: HeartbeatDataAny[]
 }
 
 interface HeartbeatDataBase {
-	command: HeartbeatCommandType,
+	command: WorkerCommandType,
 	data: any
 }
 
@@ -20,25 +20,25 @@ export interface SystemInfoData {
 }
 
 export interface HeartbeatDataSystemInfo extends HeartbeatDataBase {
-	command: HeartbeatCommandType.SendSystemInfo,
+	command: WorkerCommandType.SendSystemInfo,
 	data: SystemInfoData
 }
 
 export interface HeartbeatDataListFunctions extends HeartbeatDataBase {
-	command: HeartbeatCommandType.ListFunctions,
+	command: WorkerCommandType.ListFunctions,
 	data: FunctionDescriptionMap
 }
 
 export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions
 
 export interface HeartbeatResponse {
-	commands?: HeartbeatCommand[]
+	commands?: WorkerCommand[]
 }
 
 export function BodyIsHeartbeat (body: any): boolean {
 	const template: Heartbeat = {
 		data: [],
-		time: new Date()
+		time: 0
 	}
 
 	return Object.keys(body).sort().toString() === Object.keys(template).sort().toString()

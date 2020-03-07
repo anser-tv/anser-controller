@@ -1,5 +1,5 @@
-import { FunctionConfig, VideoIO } from '../function/description'
-import { FunctionRunConfig } from '../function/function'
+import { Jobs } from '../db'
+import { JobRunConfig } from './job-run-config'
 
 export enum TargetType {
 	WORKER = 'WORKER',
@@ -17,24 +17,19 @@ export enum JobStatus {
 	COMPLETED = 'COMPLETED'
 }
 
-export interface JobStartRequest {
-	functionId: string
-	config: FunctionRunConfig
-	inputs: { [id: string]: string }
-	outputs: { [id: string]: string }
-}
-
 export interface JobStartRequestResponse {
 	status: JobStatus
 	details: string
 }
 
-export function BodyIsJobStartRequest (body: any): boolean {
-	const template: JobStartRequest = {
+export type JobTarget = { workerId: string } | { groupId: string } | { workerId: string, groupId: string }
+
+export function BodyIsJobRunConfig (body: any): boolean {
+	const template: Omit<JobRunConfig, 'GetConfigById' | 'GetInputById' | 'GetOutputById'> = {
 		functionId: '',
-		inputs: { },
-		outputs: { },
-		config: { }
+		inputs: new Map(),
+		outputs: new Map(),
+		functionConfig: new Map()
 	}
 
 	return Object.keys(body).sort().toString() === Object.keys(template).sort().toString()
@@ -43,18 +38,15 @@ export function BodyIsJobStartRequest (body: any): boolean {
 /**
  * Stores the state of a Job, is an instace of a function.
  */
-export class Job {
+export class Job implements Jobs {
 	constructor (
-		public targetType: TargetType,
-		public target: string,
-		public config: FunctionConfig[],
-		public inputs: VideoIO[],
-		public outputs: VideoIO[]
+		public target: JobTarget,
+		public runConfig: JobRunConfig
 	) { }
 
 	/**
 	 * Checks if this job can be run.
-	 * @returns {true} If the job can be run.
+	 * @returns true If the job can be run.
 	 */
 	public CanRun (): Promise<boolean> {
 		return Promise.resolve(false)
@@ -62,7 +54,7 @@ export class Job {
 
 	/**
 	 * Runs this job.
-	 * @returns {true} If the job started successfully.
+	 * @returns true If the job started successfully.
 	 */
 	public Run (): Promise<boolean> {
 		return Promise.resolve(false)
@@ -70,21 +62,9 @@ export class Job {
 
 	/**
 	 * Stops this job.
-	 * @returns {true} If the job stopped successfully.
+	 * @returns true If the job stopped successfully.
 	 */
 	public Stop (): Promise<boolean> {
 		return Promise.resolve(false)
-	}
-
-	private getConfigById (id: string): FunctionConfig | undefined {
-		return this.config.find((config) => config.id === id)
-	}
-
-	private getInputById (id: string): VideoIO | undefined {
-		return this.inputs.find((input) => input.id === id)
-	}
-
-	private getOutputById (id: string): VideoIO | undefined {
-		return this.outputs.find((output) => output.id === id)
 	}
 }

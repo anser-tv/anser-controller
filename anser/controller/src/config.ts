@@ -2,6 +2,7 @@ import fs from 'fs'
 export interface Config {
 	authKeys: string[]
 	functionsDirectory: string
+	dbUrl: string
 }
 
 /**
@@ -15,6 +16,7 @@ export class ConfigLoader {
 		const conf = JSON.parse(data)
 		if (this.isValidConfig(conf)) {
 			conf.functionsDirectory = conf.functionsDirectory ?? 'functions'
+			conf.dbUrl = conf.dbUrl ?? 'mongodb://localhost:59923'
 			this.config = conf
 		} else {
 			throw Error(`Invalid config: ${file}`)

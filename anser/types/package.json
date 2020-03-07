@@ -41,6 +41,8 @@
     "ext": "ts"
   },
   "dependencies": {
+    "@types/mongodb": "^3.3.16",
+    "mongodb": "^3.5.4",
     "winston": "^3.2.1"
   }
 }

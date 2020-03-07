@@ -58,7 +58,7 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	 * Validates the function.
 	 */
 	public Validate (): boolean {
-		return !!this.config.pipeline
+		return !!this.config.get('pipeline')
 	}
 	protected validate (): boolean {
 		throw new Error('Method not implemented.')

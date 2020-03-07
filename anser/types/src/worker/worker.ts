@@ -1,0 +1,5 @@
+export enum WorkerStatus {
+	NOT_REGISTERED = 'NOT_REGISTERED',
+	ONLINE = 'ONLINE',
+	OFFLINE = 'OFFLINE'
+}

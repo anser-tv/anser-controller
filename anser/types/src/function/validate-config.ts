@@ -7,7 +7,7 @@ export function ValidateFunctionConfig (config: FunctionRunConfig, constraints: 
 		const key = keys[i]
 		const constraint = constraints[key]
 
-		let confVal = config[key]
+		let confVal = config.get(key)
 
 		switch(constraint.type) {
 			case ConfigContraintType.STRING:

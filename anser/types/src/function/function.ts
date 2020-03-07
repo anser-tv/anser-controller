@@ -18,7 +18,7 @@ export enum ConfigContraintType {
 	BOOLEAN = 'BOOLEAN'
 }
 
-export interface FunctionRunConfig { [key: string]: number | string | boolean }
+export type FunctionRunConfig = Map<string, number | string | boolean>
 
 export interface ConfigConstraintBase {
 	type: ConfigContraintType

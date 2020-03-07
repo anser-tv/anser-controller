@@ -1,13 +1,45 @@
-import { Heartbeat, HeartbeatCommandType } from 'anser-types'
+import {
+	AnserDatabase,
+	DBCollections,
+	Heartbeat,
+	strict,
+	stripId,
+	StrippedHeartbeatsDB,
+	WorkerCommand,
+	WorkerCommandType,
+	WorkerStatus
+} from 'anser-types'
 import { Response } from 'supertest'
 import supertest from 'supertest'
 import { App } from '../app/app'
 import { ANSER_VERSION } from '../app/app'
-import { WorkerStatus } from '../app/state'
+
+let database: AnserDatabase
+let app: App
+
+beforeEach(async () => {
+	if (database) await database.Disconnect()
+	database = new AnserDatabase(process.env.MONGO_URL as string)
+	await database.Connect()
+	app = new App('src/__tests__/__mocks__/config_a.json', global.process.env.MONGO_URL as string, true)
+	await app.Start()
+})
+
+afterEach(async () => {
+	await app.Stop()
+	for (const key in database.collections) {
+		if (database.collections[(key as keyof DBCollections)]) {
+			const k = key as keyof DBCollections
+			try {
+				await database.collections[k].drop()
+			} catch (_err) { /* no-op */ }
+		}
+	}
+	await database.Disconnect()
+})
 
 async function getFromApp (url: string, key: string, version: string): Promise<Response> {
 	try {
-		const app = new App('src/__tests__/__mocks__/config_a.json')
 		const res = await supertest(app.app).get(url).set('authKey', key).set('targetVersion', version)
 		app.Close()
 		return Promise.resolve(res)
@@ -16,16 +48,14 @@ async function getFromApp (url: string, key: string, version: string): Promise<R
 	}
 }
 
-async function postToApp (url: string, key: string, body: any): Promise<Response> {
-	const app = new App('src/__tests__/__mocks__/config_a.json')
-	const res = await supertest(app.app).post(url).set('authKey', key).send(body)
+async function postToApp (url: string, key: string, version: string, body: any): Promise<Response> {
+	const res = await supertest(app.app).post(url).set('authKey', key).set('targetVersion', version).send(body)
 	app.Close()
 	return Promise.resolve(res)
 }
 
 describe('Controller app: Is alive', () => {
 	it('Responds to GET /', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json')
 		const res = await supertest(app.app).get('/')
 		app.Close()
 		expect(res.status).toEqual(200)
@@ -63,9 +93,11 @@ describe('Controller app: Gets all workers', () => {
 	})
 
 	it('Gets all workers', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json');
-		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
-			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker1', status: WorkerStatus.ONLINE }
+		)
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker2', status: WorkerStatus.OFFLINE }
 		)
 		const res = await supertest(app.app).get(`/anser/workers`).set('authKey', 'Hello').set('targetVersion', ANSER_VERSION)
 		app.Close()
@@ -80,31 +112,37 @@ describe('Controller app: Gets all workers of a given status', () => {
 	})
 
 	it('Return all online workers', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json');
-		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
-			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker1', status: WorkerStatus.ONLINE }
 		)
-		const res = await supertest(app.app).get(`/anser/workers/status/online`).set('authKey', 'Hello')
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker2', status: WorkerStatus.OFFLINE }
+		)
+		const res = await getFromApp(`/anser/workers/status/online`, 'Hello', ANSER_VERSION)
 		app.Close()
 		expect(res.body).toEqual(['test-worker1'])
 	})
 
 	it('Return all offline workers', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json');
-		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
-			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker1', status: WorkerStatus.ONLINE }
 		)
-		const res = await supertest(app.app).get(`/anser/workers/status/offline`).set('authKey', 'Hello')
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker2', status: WorkerStatus.OFFLINE }
+		)
+		const res = await getFromApp(`/anser/workers/status/offline`, 'Hello', ANSER_VERSION)
 		app.Close()
 		expect(res.body).toEqual(['test-worker2'])
 	})
 
 	it('Rejects an unknown status', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json');
-		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
-			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker1', status: WorkerStatus.ONLINE }
 		)
-		const res = await supertest(app.app).get(`/anser/workers/status/not_a_status`).set('authKey', 'Hello')
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker2', status: WorkerStatus.OFFLINE }
+		)
+		const res = await getFromApp(`/anser/workers/status/not_a_status`, 'Hello', ANSER_VERSION)
 		app.Close()
 		expect(res.status).toEqual(400)
 	})
@@ -112,21 +150,19 @@ describe('Controller app: Gets all workers of a given status', () => {
 
 describe ('Controller app: Gets worker status', () => {
 	it('Gets status for existing worker', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json');
-		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
-			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker1', status: WorkerStatus.ONLINE }
 		)
-		const res = await supertest(app.app).get(`/anser/workers/test-worker1/status`).set('authKey', 'Hello')
+		await database.collections.WORKER.insertOne(
+			{ workerId: 'test-worker2', status: WorkerStatus.OFFLINE }
+		)
+		const res = await getFromApp(`/anser/workers/test-worker1/status`, 'Hello', ANSER_VERSION)
 		app.Close()
 		expect(res.body).toEqual({ status: 'ONLINE'})
 	})
 
 	it('Returns NOT_REGISTERED for non-existant worker', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json');
-		((app.state as any)._workersRegistered as Map<string, WorkerStatus>) = new Map(
-			[['test-worker1', WorkerStatus.ONLINE], ['test-worker2', WorkerStatus.OFFLINE]]
-		)
-		const res = await supertest(app.app).get(`/anser/workers/not_a_worker/status`).set('authKey', 'Hello')
+		const res = await getFromApp(`/anser/workers/test-worker1/status`, 'Hello', ANSER_VERSION)
 		app.Close()
 		expect(res.body).toEqual({ status: 'NOT_REGISTERED'})
 	})
@@ -134,20 +170,20 @@ describe ('Controller app: Gets worker status', () => {
 
 describe('Controller app: Gets all heartbeats for a given worker', () => {
 	it('Gets heartbeats', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json')
-		app.state.AddHeartbeat('test-worker', { time: new Date('2020/01/31 00:00:00'), data: [] })
-		app.state.AddHeartbeat('test-worker', { time: new Date('2020/01/31 01:00:00'), data: [] })
-		const res = await supertest(app.app).get(`/anser/heartbeats/test-worker`).set('authKey', 'Hello')
+		await app.state.AddHeartbeat('test-worker', { time: 0, data: [] })
+		await app.state.AddHeartbeat('test-worker', { time: 0, data: [] })
+		const res = await getFromApp(`/anser/heartbeats/test-worker`, 'Hello', ANSER_VERSION)
 		app.Close()
-		expect(res.body).toEqual([
-			{ time: '2020-01-31T00:00:00.000Z', data: [] },
-			{ time: '2020-01-31T01:00:00.000Z', data: [] }
-		])
+		expect(stripId(res.body)).toEqual(
+			strict<StrippedHeartbeatsDB[]>([
+				strict<StrippedHeartbeatsDB>({ time: 0, data: [], workerId: 'test-worker' }),
+				strict<StrippedHeartbeatsDB>({ time: 0, data: [], workerId: 'test-worker' })
+			])
+		)
 	})
 
 	it('Returns empty array for non-existant worker', async () => {
-		const app = new App('src/__tests__/__mocks__/config_a.json')
-		const res = await supertest(app.app).get(`/anser/heartbeats/not_a_worker`).set('authKey', 'Hello')
+		const res = await getFromApp(`/anser/heartbeats/test-worker`, 'Hello', ANSER_VERSION)
 		app.Close()
 		expect(res.body).toEqual([])
 	})
@@ -155,30 +191,30 @@ describe('Controller app: Gets all heartbeats for a given worker', () => {
 
 describe('Controller app: Adds a heartbeat to a given worker', () => {
 	it('Rejects an invalid request body', async () => {
-		const res = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', { })
+		const res = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, { })
 		expect(res.status).toEqual(400)
 	})
 
 	it('Accepts a valid request body', async () => {
 		const heartbeat: Heartbeat = {
 			data: [],
-			time: new Date()
+			time: 0
 		}
-		const res = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', heartbeat)
+		const res = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
 		expect(res.status).toEqual(200)
-		expect(res.body.commands).toContainEqual({ type: HeartbeatCommandType.SendSystemInfo })
+		expect(res.body.commands).toContainEqual(
+			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		)
 	})
 
 	it('Requests system info only once', async () => {
 		const heartbeat: Heartbeat = {
 			data: [],
-			time: new Date()
+			time: 0
 		}
-		const app = new App('src/__tests__/__mocks__/config_a.json')
-		const res1 = await supertest(app.app)
-			.post(`/anser/heartbeat/test-worker`).set('authKey', 'Hello').send(heartbeat)
+		const res1 = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
 		heartbeat.data = [{
-			command: HeartbeatCommandType.SendSystemInfo,
+			command: WorkerCommandType.SendSystemInfo,
 			data: {
 				cpu_usage_percent: 50,
 				disk_capacity: 50,
@@ -187,14 +223,17 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 				ram_used: 35
 			}
 		}]
-		const res2 = await supertest(app.app)
-			.post(`/anser/heartbeat/test-worker`).set('authKey', 'Hello').send(heartbeat)
+		const res2 = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
 		app.Close()
 		expect(res1.status).toEqual(200)
-		expect(res1.body.commands).toContainEqual({ type: HeartbeatCommandType.SendSystemInfo })
+		expect(res1.body.commands).toContainEqual(
+			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		)
 
 		expect(res2.status).toEqual(200)
-		expect(res2.body.commands).not.toContainEqual({ type: HeartbeatCommandType.SendSystemInfo })
+		expect(res2.body.commands).not.toContainEqual(
+			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		)
 	})
 
 	it('Requests system info if previous was invalid', async () => {
@@ -202,20 +241,21 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 			data: [],
 			time: new Date()
 		}
-		const app = new App('src/__tests__/__mocks__/config_a.json')
-		const res1 = await supertest(app.app)
-			.post(`/anser/heartbeat/test-worker`).set('authKey', 'Hello').send(heartbeat)
+		const res1 = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
 		heartbeat.data = [{
-			command: HeartbeatCommandType.SendSystemInfo,
+			command: WorkerCommandType.SendSystemInfo,
 			data: { }
 		}]
-		const res2 = await supertest(app.app)
-		.post(`/anser/heartbeat/test-worker`).set('authKey', 'Hello').send(heartbeat)
+		const res2 = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
 		app.Close()
 		expect(res1.status).toEqual(200)
-		expect(res1.body.commands).toContainEqual({ type: HeartbeatCommandType.SendSystemInfo })
+		expect(res1.body.commands).toContainEqual(
+			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		)
 
 		expect(res2.status).toEqual(200)
-		expect(res2.body.commands).toContainEqual({ type: HeartbeatCommandType.SendSystemInfo})
+		expect(res2.body.commands).toContainEqual(
+			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		)
 	})
 })

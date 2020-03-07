@@ -1,9 +1,10 @@
 {
 	"compilerOptions": {
+		"experimentalDecorators": true,
 		/* Basic Options */
 		"target": "es2019",
 		"module": "commonjs",
-		"lib": ["es6"],
+		"lib": ["es2019"],
 		"declaration": true,
 		"sourceMap": true,
 		"outDir": "./dist",

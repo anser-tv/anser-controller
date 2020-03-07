@@ -20,5 +20,6 @@ module.exports = {
 			statements: 80
 		}
 	},
-	testEnvironment: "node"
+	testEnvironment: "node",
+	preset: '@shelf/jest-mongodb'
 }

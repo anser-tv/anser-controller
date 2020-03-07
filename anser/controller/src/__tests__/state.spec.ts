@@ -1,32 +1,75 @@
-import { FunctionDescriptionMap, strict, SystemInfoData } from 'anser-types'
-import { State, WorkerStatus } from '../app/state'
-import { FunctionDescription } from './../../../types/src/function/description'
+import {
+	AnserDatabase,
+	DBCollections,
+	FunctionDescription,
+	FunctionDescriptionMap,
+	Heartbeat,
+	HeartbeatDataSystemInfo,
+	strict,
+	stripId,
+	StrippedHeartbeatsDB,
+	StrippedWorker,
+	SystemInfoData,
+	WorkerCommandType,
+	WorkerStatus
+} from 'anser-types'
+import { State } from '../app/state'
+
+let database: AnserDatabase
+let state: State
+
+beforeEach(async () => {
+	if (database) await database.Disconnect()
+	database = new AnserDatabase(process.env.MONGO_URL as string)
+	await database.Connect()
+	state = new State({ authKeys: ['hello'], functionsDirectory: '', dbUrl: process.env.MONGO_URL as string }, true)
+	await state.Initialize()
+})
+
+afterEach(async () => {
+	for (const key in database.collections) {
+		if (database.collections[(key as keyof DBCollections)]) {
+			const k = key as keyof DBCollections
+			try {
+				await database.collections[k].drop()
+			} catch (_err) { /* no-op */ }
+		}
+	}
+	await database.Disconnect()
+})
 
 describe('state', () => {
-	it ('Adds a heartbeat', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
-		const heartbeat = { time: new Date(), data: [] }
-		state.AddHeartbeat('test-worker', heartbeat)
-		const result1 = (state as any)._workersRegistered
-		const result2 = (state as any)._heartBeats
-		const result3 = (state as any)._lastHeartbeat['test-worker']
+	it ('Adds a heartbeat', async () => {
+		const heartbeat = { time: 0, data: [] }
+		await state.AddHeartbeat('test-worker', heartbeat)
 		state.StopManager()
-		expect(result1).toEqual(new Map([['test-worker', WorkerStatus.ONLINE]]))
-		expect(result2).toEqual({ 'test-worker': [heartbeat]})
-		expect(result3).toEqual(heartbeat)
+		const workers = await database.collections.WORKER.find({ }).toArray()
+		const heartbeats = await database.collections.WORKER_HEARTBEAT.find({ }).toArray()
+		expect(stripId(workers)).toEqual(
+			strict<StrippedWorker[]>([
+				{ workerId: 'test-worker', status: WorkerStatus.ONLINE }
+			])
+		)
+		expect(stripId(heartbeats)).toEqual(
+			strict<StrippedHeartbeatsDB[]>([
+				strict<StrippedHeartbeatsDB>({
+					workerId: 'test-worker',
+					time: 0,
+					data: []
+				})
+			])
+		)
 	})
 })
 
 describe('RequestSystemInfo', () => {
-	it ('Requests when systeminfo has not been logged', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
-		const result = (state as any).requestSystemInfo('test-worker')
+	it ('Requests when systeminfo has not been logged', async () => {
+		const result = await (state as any).requestSystemInfo('test-worker')
 		state.StopManager()
 		expect(result).toBe(true)
 	})
 
-	it('Doesn\'t request systeminfo when systeminfo has been recently added', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
+	it('Doesn\'t request systeminfo when systeminfo has been recently added', async () => {
 		const data: SystemInfoData = {
 			cpu_usage_percent: 10,
 			disk_capacity: 30,
@@ -35,39 +78,50 @@ describe('RequestSystemInfo', () => {
 			ram_used: 5
 		}
 
-		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 0);
-		(state as any)._systemInfo['test-worker'] = {
-			data,
-			lastReceived: { getTime: () => 0 }
+		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 0)
+		const heartbeat: Heartbeat = {
+			time: 0,
+			data: [
+				strict<HeartbeatDataSystemInfo>({
+					command: WorkerCommandType.SendSystemInfo,
+					data
+				})
+			]
 		}
-		const result = (state as any).requestSystemInfo('test-worker')
+		await state.AddHeartbeat('test-worker', heartbeat)
+		const result = await (state as any).requestSystemInfo('test-worker')
 		dateNowSpy.mockRestore()
 		state.StopManager()
 		expect(result).toBe(false)
 	})
 
-	it('Requests systeminfo when it\'s been 5 minutes since last recieved', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
+	it('Requests systeminfo when it\'s been 5 minutes since last recieved', async () => {
 		const data: SystemInfoData = {
 			cpu_usage_percent: 10,
 			disk_capacity: 30,
 			disk_usage: 25,
 			ram_available: 20,
 			ram_used: 5
-		};
-		(state as any)._systemInfo['test-worker'] = {
-			data,
-			lastReceived: { getTime: () => 0 }
 		}
-		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 60 * 1000)
-		const result = (state as any).requestSystemInfo('test-worker')
+		const heartbeat: Heartbeat = {
+			time: 0,
+			data: [
+				strict<HeartbeatDataSystemInfo>({
+					command: WorkerCommandType.SendSystemInfo,
+					data
+				})
+			]
+		}
+		let dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 0)
+		await state.AddHeartbeat('test-worker', heartbeat)
+		dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 60 * 1000)
+		const result = await (state as any).requestSystemInfo('test-worker')
 		dateNowSpy.mockRestore()
 		state.StopManager()
 		expect(result).toBe(true)
 	})
 
 	it('Recognises valid system info data', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const systemInfoData: SystemInfoData = {
 			cpu_usage_percent: 50,
 			disk_capacity: 90,
@@ -81,7 +135,6 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Recognises invalid system info data', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const systemInfoData: Omit<SystemInfoData, 'ram_used'> = {
 			cpu_usage_percent: 50,
 			disk_capacity: 90,
@@ -94,7 +147,6 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Starts manager', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		state.StartManager()
 		const result = (state as any)._runManager
 		state.StopManager()
@@ -102,76 +154,76 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Stops manager', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		state.StartManager()
 		state.StopManager()
 		expect((state as any)._runManager).toBe(false)
 	})
 
-	it('Detects disconnected worker', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true);
-		(state as any)._lastHeartbeat['dev-worker'] = {
-			time: 0
-		};
-		(state as any)._workersRegistered.set('dev-worker', WorkerStatus.ONLINE)
-		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 61 * 1000);
-		(state as any).manageState()
-		const result = (state as any)._workersRegistered.get('dev-worker')
+	it('Detects disconnected worker', async () => {
+		let dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 0)
+		await database.collections.WORKER.insertOne({ workerId: 'test-worker', status: WorkerStatus.ONLINE })
+		await database.collections.WORKER_HEARTBEAT.insertOne({ workerId: 'test-worker', time: 0, data: [] })
+		dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 61 * 1000)
+		await (state as any).manageState()
+		const result = await database.collections.WORKER.findOne({ workerId: 'test-worker' })
 		state.StopManager()
 		dateNowSpy.mockRestore()
-		expect(result).toBe(WorkerStatus.OFFLINE)
+		expect(result && result.status).toBe(WorkerStatus.OFFLINE)
 	})
 
-	it('Does not alert on connected worker', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true);
-		(state as any)._lastHeartbeat['dev-worker'] = {
-			time: 0
-		};
-		(state as any)._workersRegistered.set('dev-worker', WorkerStatus.ONLINE)
-		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 1000);
-		(state as any).manageState()
-		const result = (state as any)._workersRegistered.get('dev-worker')
+	it('Does not alert on connected worker', async () => {
+		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 0)
+		await database.collections.WORKER.insertOne({ workerId: 'test-worker', status: WorkerStatus.ONLINE })
+		await database.collections.WORKER_HEARTBEAT.insertOne({ workerId: 'test-worker', time: 0, data: [] })
+		await (state as any).manageState()
+		const result = await database.collections.WORKER.findOne({ workerId: 'test-worker' })
 		state.StopManager()
 		dateNowSpy.mockRestore()
-		expect(result).toBe(WorkerStatus.ONLINE)
+		expect(result && result.status).toBe(WorkerStatus.ONLINE)
 	})
 
-	it('Does not alert on already disconnected worker', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true);
-		(state as any)._lastHeartbeat['dev-worker'] = {
-			time: 0
-		};
-		(state as any)._workersRegistered.set('dev-worker', WorkerStatus.OFFLINE)
-		const dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 1000);
-		(state as any).manageState()
-		const result = (state as any)._workersRegistered.get('dev-worker')
+	it('Does not alert on already disconnected worker', async () => {
+		let dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 0)
+		await database.collections.WORKER.insertOne({ workerId: 'test-worker', status: WorkerStatus.OFFLINE })
+		await database.collections.WORKER_HEARTBEAT.insertOne({ workerId: 'test-worker', time: 0, data: [] })
+		dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 61 * 1000)
+		await (state as any).manageState()
+		const result = await database.collections.WORKER.findOne({ workerId: 'test-worker' })
 		state.StopManager()
 		dateNowSpy.mockRestore()
-		expect(result).toBe(WorkerStatus.OFFLINE)
+		expect(result && result.status).toBe(WorkerStatus.OFFLINE)
 	})
 
-	it('Sets new server to online', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
-		const heartbeat = { time: new Date(), data: [] }
-		state.AddHeartbeat('test-worker', heartbeat)
-		const result = (state as any)._workersRegistered
+	it('Sets new server to online', async () => {
+		const heartbeat: StrippedHeartbeatsDB = { workerId: 'test-worker', time: 0, data: [] }
+		await state.AddHeartbeat('test-worker', heartbeat)
+		const workers = await database.collections.WORKER.find({ }).toArray()
 		state.StopManager()
-		expect(result).toEqual(new Map([['test-worker', WorkerStatus.ONLINE]]))
+		expect(stripId(workers)).toEqual(
+			strict<StrippedWorker[]>([
+				{ workerId: 'test-worker', status: WorkerStatus.ONLINE }
+			])
+		)
 	})
 
-	it('Sets reconnected server to online', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
-		const heartbeat = { time: new Date(), data: [] };
-		(state as any)._workersRegistered.set('test-worker', WorkerStatus.OFFLINE);
-		(state as any)._heartBeats['test-worker'] = []
-		state.AddHeartbeat('test-worker', heartbeat)
-		const result = (state as any)._workersRegistered
+	it('Sets reconnected server to online', async () => {
+		let dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 0)
+		await database.collections.WORKER.insertOne({ workerId: 'test-worker', status: WorkerStatus.OFFLINE })
+		await database.collections.WORKER_HEARTBEAT.insertOne({ workerId: 'test-worker', time: 0, data: [] })
+		dateNowSpy = jest.spyOn(Date, 'now').mockImplementation(() => 5000)
+		const heartbeat: StrippedHeartbeatsDB = { workerId: 'test-worker', time: 0, data: [] }
+		await state.AddHeartbeat('test-worker', heartbeat)
+		const workers = await database.collections.WORKER.find({ }).toArray()
 		state.StopManager()
-		expect(result).toEqual(new Map([['test-worker', WorkerStatus.ONLINE]]))
+		dateNowSpy.mockRestore()
+		expect(stripId(workers)).toEqual(
+			strict<StrippedWorker[]>([
+				{ workerId: 'test-worker', status: WorkerStatus.ONLINE }
+			])
+		)
 	})
 
 	it('Recognises valid system info data', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const systemInfoData: FunctionDescriptionMap = {
 			somehash: {
 				author: '',
@@ -191,7 +243,6 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Recognises invalid system info data', () => {
-		const state = new State({ authKeys: ['hello'], functionsDirectory: '' }, true)
 		const systemInfoData: FunctionDescriptionMap = {
 			somehash: strict<Omit<FunctionDescription, 'version'>>({
 				author: '',

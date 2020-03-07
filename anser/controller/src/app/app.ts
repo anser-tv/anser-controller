@@ -1,11 +1,12 @@
-import { BodyIsHeartbeat, BodyIsJobStartRequest, Heartbeat, logger, VersionsAreCompatible } from 'anser-types'
+import { BodyIsHeartbeat, BodyIsJobRunConfig, Heartbeat, logger, VersionsAreCompatible, WorkerStatus } from 'anser-types'
 import express from 'express'
+import asyncHandler from 'express-async-handler'
 import http from 'http'
 import https from 'https'
 import { Auth } from '../auth/auth'
 import { Config, ConfigLoader } from '../config'
 import { LogRequest, LogResponse } from '../logger/logger'
-import { State, WorkerStatus } from './state'
+import { State } from './state'
 
 export const ANSER_VERSION = '1.0.0'
 
@@ -25,17 +26,24 @@ export class App {
 	public state: State
 	public config: Config
 
-	constructor (configFile?: string) {
+	constructor (configFile?: string, dbUrlOverride?: string, delayStart?: boolean) {
 		/* istanbul ignore next */
 		this.config = new ConfigLoader(configFile ?? 'configs').config
 		this.auth = new Auth()
-		this.state = new State(this.config)
+		this.state = new State({ ...this.config, dbUrl: dbUrlOverride ?? this.config.dbUrl }, delayStart)
 		this.app = express()
 		this.app.use(express.json())
 		// Perform auth challenge against all routes except '/'
 		this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
 			if (!req.url.match(/^\/$/)) {
 				this.authenticationChallenge(req, res, next)
+			} else {
+				LogRequest(req, logger)
+				next()
+			}
+		})
+		this.app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+			if (!req.url.match(/^\/$/)) {
 				this.versionCheck(req, res, next)
 			} else {
 				LogRequest(req, logger)
@@ -53,7 +61,22 @@ export class App {
 			this.serverDevelop.listen((PORT as number) + 1)
 			logger.warn(`App is serving over HTTP at http://127.0.0.1:${(PORT as number) + 1}. This is STRONGLY discouraged for deployment.`)
 		}
-		this.state.StartManager()
+		if (!delayStart) this.state.StartManager()
+	}
+	/**
+	 * Connects to DB and starts managing state.
+	 */
+	public async Start (manager?: boolean): Promise<void> {
+		await this.state.Initialize()
+		if (manager) this.state.StartManager()
+	}
+
+	/**
+	 * Disconnects from DB and stops managing state.
+	 */
+	public async Stop (): Promise<void> {
+		this.state.StopManager()
+		await this.state.Destroy()
 	}
 
 	/**
@@ -169,9 +192,15 @@ export class App {
 		 */
 		this.app.get(
 			`/anser/workers`,
-			(_req: express.Request, res: express.Response) => {
-				res.send(this.state.GetAllWorkers())
-			}
+			asyncHandler(async (_req: express.Request, res: express.Response) => {
+				try {
+					const workers = await this.state.GetAllWorkers()
+					res.send(workers)
+				} catch (err) {
+					logger.error(err)
+					res.status(500).end()
+				}
+			})
 		)
 
 		/**
@@ -179,14 +208,20 @@ export class App {
 		 */
 		this.app.get(
 			`/anser/workers/status/:status`,
-			(req: express.Request, res: express.Response) => {
+			asyncHandler(async (req: express.Request, res: express.Response) => {
 				if (req.params.status.toUpperCase() in WorkerStatus) {
 					const status = WorkerStatus[req.params.status.toUpperCase() as keyof typeof WorkerStatus]
-					res.send(this.state.GetWorkersOfStatus(status))
+					try {
+						const workers = await this.state.GetWorkersOfStatus(status)
+						res.send(workers)
+					} catch (err) {
+						logger.error(err)
+						res.status(500).end()
+					}
 				} else {
 					res.status(400).send(`Unknown status: ${req.params.status}`)
 				}
-			}
+			})
 		)
 
 		/**
@@ -194,9 +229,15 @@ export class App {
 		 */
 		this.app.get(
 			`/anser/workers/:workerId/status`,
-			(req: express.Request, res: express.Response) => {
-				res.send({ status: this.state.GetWorkerStatus(req.params.workerId) })
-			}
+			asyncHandler(async (req: express.Request, res: express.Response) => {
+				try {
+					const status = await this.state.GetWorkerStatus(req.params.workerId)
+					res.send({ status })
+				} catch (err) {
+					logger.error(err)
+					res.send(500).end()
+				}
+			})
 		)
 
 		/**
@@ -208,9 +249,14 @@ export class App {
 		 */
 		this.app.get(
 			`/anser/heartbeats/:workerId`,
-			(req: express.Request, res: express.Response) => {
-				res.send(this.state.GetAllHearbeatsForWorker(req.params.workerId))
-			}
+			asyncHandler(async (req: express.Request, res: express.Response) => {
+				this.state.GetAllHearbeatsForWorker(req.params.workerId).then((resp) => {
+					res.send(resp)
+				}).catch((err) => {
+					logger.error(err)
+					res.status(500).end()
+				})
+			})
 		)
 
 		/**
@@ -221,25 +267,28 @@ export class App {
 		 */
 		this.app.post(
 			`/anser/heartbeat/:workerId`,
-			(req: express.Request, res: express.Response) => {
+			asyncHandler(async (req: express.Request, res: express.Response) => {
 				const body = req.body
 				if (!BodyIsHeartbeat(body)) {
 					const heartbeatExample: Heartbeat = {
 						data: [],
-						time: new Date()
+						time: Date.now()
 					}
 					this.sendBadRequest(res, `Heartbeat must be in the form: ${JSON.stringify(heartbeatExample)}`)
 				} else {
-					const result = this.state.AddHeartbeat(req.params.workerId, body as Heartbeat)
-
-					if (result.commands && result.commands.length) {
-						logger.debug(`Sending commands: ${JSON.stringify(result)}`)
-						res.send(result)
-					} else {
-						res.status(200).end()
-					}
+					this.state.AddHeartbeat(req.params.workerId, body as Heartbeat).then((result) => {
+						if (result.commands && result.commands.length) {
+							logger.debug(`Sending commands: ${JSON.stringify(result)}`)
+							res.send(result)
+						} else {
+							res.status(200).end()
+						}
+					}).catch((err) => {
+						logger.error(err)
+						res.status(500).end()
+					})
 				}
-			}
+			})
 		)
 
 		/**
@@ -257,21 +306,31 @@ export class App {
 		 */
 		this.app.get(
 			`/anser/functions/:workerId`,
-			(req: express.Request, res: express.Response) => {
-				res.send(this.state.GetFunctionsForWorker(req.params.workerId))
-			}
+			asyncHandler(async (req: express.Request, res: express.Response) => {
+				this.state.GetFunctionsForWorker(req.params.workerId).then((result) => {
+					res.send(result)
+				}).catch((error) => {
+					logger.error(error)
+					res.status(500).end()
+				})
+			})
 		)
 
 		this.app.post(
 			`/anser/jobs/start/worker/:workerId`,
-			(req: express.Request, res: express.Response) => {
-				if (!BodyIsJobStartRequest(req.body)) {
+			asyncHandler(async (req: express.Request, res: express.Response) => {
+				if (!BodyIsJobRunConfig(req.body)) {
 					this.sendBadRequest(res, `Invalid function`)
 				} else {
-					const result = this.state.StartJobOnWorker(req.params.workerId, req.body)
-					res.send(result)
+					try {
+						const result = await this.state.StartJobOnWorker(req.params.workerId, req.body)
+						res.send(result)
+					} catch (err) {
+						logger.error(err)
+						res.status(500).end()
+					}
 				}
-			}
+			})
 		)
 	}
 }
