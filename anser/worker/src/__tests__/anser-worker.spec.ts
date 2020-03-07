@@ -1,4 +1,4 @@
-import { HeartbeatCommandType, HeartbeatResponse, SystemInfoData } from 'anser-types'
+import { HeartbeatResponse, SystemInfoData, WorkerCommandType } from 'anser-types'
 import { AnserWorker } from '../anser-worker'
 
 const MOCK_SYSTEM_INFO: SystemInfoData = {
@@ -36,14 +36,15 @@ describe('anser-worker', () => {
 		(worker as any).getSystemInfo = mockGetSystemInfo
 		const commands: HeartbeatResponse = {
 			commands: [{
-				type: HeartbeatCommandType.SendSystemInfo
+				commandId: '',
+				type: WorkerCommandType.SendSystemInfo
 			}]
 		}
 		let result = await (worker as any).processHeartbeatResponse(commands)
 		expect((worker as any)._nextHeartbeat.data)
 		.toEqual([
 			{
-				command: HeartbeatCommandType.SendSystemInfo,
+				command: WorkerCommandType.SendSystemInfo,
 				data: {
 					cpu_usage_percent: 50,
 					disk_capacity: 1000,
@@ -59,7 +60,7 @@ describe('anser-worker', () => {
 		expect((worker as any)._nextHeartbeat.data)
 		.toEqual([
 			{
-				command: HeartbeatCommandType.SendSystemInfo,
+				command: WorkerCommandType.SendSystemInfo,
 				data: {
 					cpu_usage_percent: 50,
 					disk_capacity: 1000,
