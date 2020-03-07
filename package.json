@@ -7,6 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "build": "tsc --build tsconfig.json",
     "build:types": "yarn workspace anser-types build",
     "build:worker": "yarn build:types && yarn workspace anser-worker build",
     "build:controller": "yarn build:types && yarn workspace anser-controller build",

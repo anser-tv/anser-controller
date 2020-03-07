@@ -1,0 +1,44 @@
+{
+	"compilerOptions": {
+		"experimentalDecorators": true,
+		/* Basic Options */
+		"target": "es2019",
+		"module": "commonjs",
+		"lib": ["es2019"],
+		"declaration": true,
+		"sourceMap": true,
+		"outDir": "./dist",
+		"rootDir": "./",
+
+		/* Strict Type-Checking Options */
+		"strict": true,
+		"moduleResolution": "node",
+		"esModuleInterop": true,
+		"preserveSymlinks": true
+    },
+    "files": [],
+    "references": [
+        {
+            "path": "anser/types/tsconfig.json"
+        },
+        {
+            "path": "functions/anser-function-gstreamer/tsconfig.json"
+        },
+        {
+            "path": "functions/anser-core-functions/tsconfig.json"
+        },
+        {
+            "path": "anser/worker/tsconfig.json"
+        },
+        {
+            "path": "anser/controller/tsconfig.json"
+        }        
+    ],
+    "paths": {
+        "anser-types": ["anser/types/index.ts"],
+        "anser-function-gstreamer": ["anser/functions/anser-function-gstreamer"],
+        "anser-core-functions": ["anser/functions/anser-core-function"],
+        "anser-worker": ["anser/worker/index.ts"],
+        "anser-controller": ["anser/controller/index.ts"]
+    }
+}

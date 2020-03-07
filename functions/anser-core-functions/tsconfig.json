@@ -1,18 +1,8 @@
 {
+	"extends": "../../tsconfig.json",
 	"compilerOptions": {
-		/* Basic Options */
-		"target": "es2019",
-		"module": "commonjs",
-		"lib": ["es6"],
-		"declaration": true,
-		"sourceMap": true,
 		"outDir": "dist",
-		"rootDir": "./",
-
-		/* Strict Type-Checking Options */
-		"strict": true,
-		"moduleResolution": "node",
-		"esModuleInterop": true
+		"rootDir": "./"
 	},
 	"include": [
         "src/**/*.ts",

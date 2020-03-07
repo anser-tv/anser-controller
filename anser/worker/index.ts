@@ -1,5 +1,5 @@
-import { AnserWorker } from './anser-worker'
-import { ConfigLoader } from './config'
+import { AnserWorker } from './src/anser-worker'
+import { ConfigLoader } from './src/config'
 
 const dev = process.env.DEV ? true : false
 
