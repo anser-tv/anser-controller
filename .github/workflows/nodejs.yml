@@ -19,7 +19,7 @@ jobs:
         node-version: ${{ matrix.node-version }}
     - name: yarn install, build, and test
       run: |
-        sudo apt install gstreamer-1.0
+        sudo apt install gstreamer-1.0 libgstreamer-plugins-base1.0-dev
         npm install -g typescript@3.7.3
         yarn
         yarn testall
