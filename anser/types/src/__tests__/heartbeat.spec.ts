@@ -4,7 +4,7 @@ describe('Body Check', () => {
 	it('Accepts a valid interface', () => {
 		const heartbeat: Heartbeat = {
 			data: [],
-			time: new Date()
+			time: 0
 		}
 		expect(BodyIsHeartbeat(heartbeat)).toBe(true)
 	})

@@ -61,7 +61,7 @@ export type ConfigConstraint =
 	ConfigConstraintDropdown |
 	ConfigContraintBoolean
 
-export interface ConstraintMap { [field: string]: ConfigConstraint }
+export type ConstraintMap = Map<string, ConfigConstraint>
 
 /**
  * Abstract implementation of Anser functions.
@@ -104,11 +104,11 @@ export abstract class AnserFunction {
 	}
 	/** Gets all config options and constraints for a function. */
 	public GetAllConfigOptions (): ConstraintMap {
-		return this.description.config.map<ConstraintMap | { }>((conf) => {
-			return { [conf.name]: conf.constraints }
-		}).reduce((prev, cur) => {
-			return { ...prev, ...cur}
-		}, { })
+		const map: ConstraintMap = new Map()
+		this.description.config.map((conf) => {
+			map.set(conf.id, conf.constraints)
+		})
+		return map
 	}
 	/** Validates function config. */
 	public Validate (): boolean {
