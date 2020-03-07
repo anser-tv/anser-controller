@@ -61,7 +61,10 @@ export class App {
 			this.serverDevelop.listen((PORT as number) + 1)
 			logger.warn(`App is serving over HTTP at http://127.0.0.1:${(PORT as number) + 1}. This is STRONGLY discouraged for deployment.`)
 		}
-		if (!delayStart) this.state.StartManager()
+		if (!delayStart) {
+			this.state.Initialize()
+			this.state.StartManager()
+		}
 	}
 	/**
 	 * Connects to DB and starts managing state.
