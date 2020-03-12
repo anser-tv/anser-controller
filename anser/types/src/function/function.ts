@@ -1,15 +1,8 @@
 import winston = require('winston')
+import { JobStatus } from '../../dist'
 import { logger as anserlog } from '../logger/logger'
 import { FunctionDescription } from './description'
 import { ValidateFunctionConfig } from './validate-config'
-
-export enum FunctionStatus {
-	NOTUSED = 'NOTUSED', // Created but no action has been run
-	CHECKING = 'CHECKING', // Checking if can run
-	RUNNING = 'RUNNING',
-	STOPPED = 'STOPPED',
-	ERROR = 'ERROR'
-}
 
 export enum ConfigContraintType {
 	STRING = 'STRING',
@@ -63,14 +56,21 @@ export type ConfigConstraint =
 
 export type ConstraintMap = Map<string, ConfigConstraint>
 
+export interface AnserFunctionParams {
+	description: FunctionDescription,
+	config: FunctionRunConfig,
+	status: JobStatus,
+	logger?: winston.Logger
+}
+
 /**
  * Abstract implementation of Anser functions.
  */
-export abstract class AnserFunction {
+export abstract class AnserFunction implements AnserFunctionParams {
 	constructor (
 		public description: FunctionDescription,
 		public config: FunctionRunConfig,
-		public status: FunctionStatus = FunctionStatus.NOTUSED,
+		public status: JobStatus = JobStatus.STARTING,
 		public logger?: winston.Logger
 	) {
 		if (!logger) {

@@ -1,4 +1,12 @@
-import { BodyIsHeartbeat, BodyIsJobRunConfig, Heartbeat, logger, VersionsAreCompatible, WorkerStatus } from 'anser-types'
+import {
+	BodyIsHeartbeat,
+	BodyIsJobRunConfig,
+	Heartbeat,
+	logger,
+	ParseRunConfigAPI,
+	VersionsAreCompatible,
+	WorkerStatus
+} from 'anser-types'
 import express from 'express'
 import asyncHandler from 'express-async-handler'
 import http from 'http'
@@ -320,13 +328,14 @@ export class App {
 		)
 
 		this.app.post(
-			`/anser/jobs/start/worker/:workerId`,
+			`/anser/jobs/add/worker/:workerId`,
 			asyncHandler(async (req: express.Request, res: express.Response) => {
 				if (!BodyIsJobRunConfig(req.body)) {
 					this.sendBadRequest(res, `Invalid function`)
 				} else {
 					try {
-						const result = await this.state.StartJobOnWorker(req.params.workerId, req.body)
+						const runConf = ParseRunConfigAPI(req.body)
+						const result = await this.state.AddJobToWorker(req.params.workerId, runConf)
 						res.send(result)
 					} catch (err) {
 						logger.error(err)

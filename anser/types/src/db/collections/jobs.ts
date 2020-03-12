@@ -1,5 +1,5 @@
 import { ObjectID } from 'mongodb'
-import { JobTarget } from '../../job/job'
+import { JobStatus, JobTarget } from '../../job/job'
 import { JobRunConfig } from '../../job/job-run-config'
 
 export interface Jobs {
@@ -9,4 +9,7 @@ export interface Jobs {
 
 export interface JobsDB extends Jobs {
 	_id: ObjectID
+	status: JobStatus
 }
+
+export type StrippedJobsDB = Omit<JobsDB, '_id'>

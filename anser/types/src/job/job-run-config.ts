@@ -1,6 +1,42 @@
 import { FunctionRunConfig } from '../..'
 import { VideoIO } from '../function/description'
 
+export interface JobRunConfigAPI {
+	functionId: string,
+	functionConfig: {
+		[id: string]: string | number | boolean
+	},
+	inputs: {
+		[id: string]: VideoIO
+	}
+	outputs: {
+		[id: string]: VideoIO
+	}
+}
+
+export function ParseRunConfigAPI (configApi: JobRunConfigAPI): JobRunConfig {
+	const conf: FunctionRunConfig = new Map()
+	const inputs: Map<string, VideoIO> = new Map()
+	const outputs: Map<string, VideoIO> = new Map()
+
+	for (const [key, val] of Object.entries(configApi.functionConfig)) {
+		conf.set(key, val)
+	}
+	for (const [key, val] of Object.entries(configApi.inputs)) {
+		inputs.set(key, val)
+	}
+	for (const [key, val] of Object.entries(configApi.outputs)) {
+		outputs.set(key, val)
+	}
+
+	return new JobRunConfig(
+		configApi.functionId,
+		conf,
+		inputs,
+		outputs
+	)
+}
+
 /**
  * Represents a request to start a job.
  */

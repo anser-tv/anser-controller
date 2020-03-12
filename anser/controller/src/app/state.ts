@@ -10,13 +10,16 @@ import {
 	JobStatus,
 	logger,
 	strict,
+	StrippedJobsDB,
 	SystemInfoData,
 	WorkerCommand,
+	WorkerCommandCheckJobCanRun,
 	WorkerCommandListFunctions,
 	WorkerCommandSendSystemInfo,
 	WorkerCommandType,
 	WorkerStatus
 } from 'anser-types'
+import { ObjectId } from 'mongodb'
 import { Config } from '../config'
 import { ANSER_VERSION } from './app'
 
@@ -118,12 +121,14 @@ export class State {
 					}
 			}
 		})
-		const commands: WorkerCommand[] = []
+		const commands: WorkerCommand[] =
+			(await this._database.collections.COMMAND.find({ workerId }).toArray())
+				.map(((cmd) => ( { ...cmd.command } )))
+
 		const reqSystemInfo = forceRequestAll || await this.requestSystemInfo(workerId)
 		if (reqSystemInfo) {
 			commands.push(
 				strict<WorkerCommandSendSystemInfo>({
-					commandId: '',
 					type: WorkerCommandType.SendSystemInfo
 				})
 			)
@@ -133,7 +138,6 @@ export class State {
 		if (reqFunctionList) {
 			commands.push(
 				strict<WorkerCommandListFunctions>({
-					commandId: '',
 					type: WorkerCommandType.ListFunctions
 				})
 			)
@@ -219,7 +223,11 @@ export class State {
 		}
 
 		for (const key of Object.keys(data)) {
-			if (Object.keys(data[key]).sort().toString() !== Object.keys(exampleFunction).sort().toString()) {
+			const funcs = data.get(key)
+
+			if (!funcs) return false
+
+			if (Object.keys(funcs).sort().toString() !== Object.keys(exampleFunction).sort().toString()) {
 				return false
 			}
 		}
@@ -244,16 +252,42 @@ export class State {
 	}
 
 	/**
-	 * Starts a job on a targeted worker.
+	 * Starts a job on a targeted worker. Does not check if the job already exists.
 	 * @param workerId Worker to start job on.
 	 * @param req Job to start.
 	 */
-	public async StartJobOnWorker (workerId: string, req: JobRunConfig): Promise<JobStartRequestResponse> {
+	public async AddJobToWorker (workerId: string, req: JobRunConfig): Promise<JobStartRequestResponse> {
 		const worker = await this._database.collections.WORKER.findOne({ workerId })
 
 		if (!worker) return { status: JobStatus.FAILED_TO_START, details: `Worker ${workerId} does not exist` }
 
-		return { status: JobStatus.FAILED_TO_START, details: `Method not implemented` }
+		const key = `functions.${req.functionId}`
+		logger.info(key)
+		const func = await this._database.collections.WORKER_FUNCTION.findOne(
+			{ [key]: { $exists: true } }
+		)
+
+		if (!func) return { status: JobStatus.FAILED_TO_START, details: `Function ${req.functionId} does not exist` }
+
+		const insertDoc: StrippedJobsDB = {
+			status: JobStatus.STARTING,
+			target: { workerId },
+			runConfig: req
+		}
+
+		const id = await this._database.collections.JOB.insertOne(insertDoc)
+
+		this._database.collections.COMMAND.insertOne({
+			workerId,
+			command: strict<WorkerCommandCheckJobCanRun>({
+				type: WorkerCommandType.CheckJobCanRun,
+				jobId: id.insertedId,
+				job: req,
+				startImmediate: true
+			})
+		})
+
+		return { status: JobStatus.STARTING, jobId: id.insertedId, details: `Starting job ${id.insertedId}` }
 	}
 
 	private async requestSystemInfo (workerId: string): Promise<boolean> {

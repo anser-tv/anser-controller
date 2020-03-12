@@ -45,9 +45,7 @@ export interface FunctionConfig {
 /**
  * id: PACKAGE_NAME:FUNCTION_NAME:HASH
  */
-export interface FunctionDescriptionMap {
-	[id: string]: FunctionDescription
-}
+export type FunctionDescriptionMap = Map<string, FunctionDescription>
 
 export function IdFromFunction (fnc: FunctionDescription): string {
 	const hash = crypto.createHash('md5').update(JSON.stringify(fnc)).digest('hex')

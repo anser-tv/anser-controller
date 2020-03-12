@@ -7,8 +7,9 @@
   "author": "Tom Lee",
   "license": "MIT",
   "scripts": {
-    "build": "yarn audit && yarn lint && yarn test && rimraf dist && tsc",
-    "build:dev": "rimraf dist && tsc",
+    "build": "yarn audit && yarn lint && yarn test && yarn clean && tsc",
+    "build:dev": "yarn clean && tsc",
+    "clean": "rimraf dist",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
     "test": "yarn lint && jest --passWithNoTests",
     "watch": "nodemon"

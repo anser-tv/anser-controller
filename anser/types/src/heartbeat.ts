@@ -1,3 +1,4 @@
+import { JobStatus } from '../dist'
 import { FunctionDescriptionMap } from './function/description'
 import { WorkerCommand, WorkerCommandType } from './worker-commands/worker-commands'
 
@@ -29,7 +30,15 @@ export interface HeartbeatDataListFunctions extends HeartbeatDataBase {
 	data: FunctionDescriptionMap
 }
 
-export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions
+export interface HeartbeatDataCheckJobCanRun extends HeartbeatDataBase {
+	command: WorkerCommandType.CheckJobCanRun,
+	data: {
+		canRun: boolean
+		status: JobStatus
+	}
+}
+
+export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions | HeartbeatDataCheckJobCanRun
 
 export interface HeartbeatResponse {
 	commands?: WorkerCommand[]

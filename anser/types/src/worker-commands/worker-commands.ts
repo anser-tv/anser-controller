@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb'
 import { JobRunConfig } from '../job/job-run-config'
 
 export const enum WorkerCommandType {
@@ -8,7 +9,6 @@ export const enum WorkerCommandType {
 }
 
 export interface WorkerCommandBase {
-	commandId: string
 	type: WorkerCommandType
 }
 
@@ -22,8 +22,9 @@ export interface WorkerCommandSendCaptureDevices extends WorkerCommandBase {
 
 export interface WorkerCommandCheckJobCanRun extends WorkerCommandBase {
 	type: WorkerCommandType.CheckJobCanRun
-	jobId: string
+	jobId: ObjectId
 	job: JobRunConfig
+	startImmediate: boolean
 }
 
 export interface WorkerCommandListFunctions extends WorkerCommandBase {

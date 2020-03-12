@@ -5,6 +5,7 @@ import {
 	HeartbeatDataListFunctions,
 	HeartbeatDataSystemInfo,
 	HeartbeatResponse,
+	JobStatus,
 	logger,
 	strict,
 	SystemInfoData,
@@ -106,6 +107,20 @@ export class AnserWorker {
 						data = strict<HeartbeatDataListFunctions>({
 							command: WorkerCommandType.ListFunctions,
 							data: this._functionLoader.GetFunctions()
+						})
+						break
+					case WorkerCommandType.CheckJobCanRun:
+						const canRun = await this._functionLoader.CheckJobCanRun(command.job)
+						let started = false
+						if (command.startImmediate && canRun) {
+							started = await this._functionLoader.StartJob(command.job)
+						}
+						data = strict<HeartbeatDataCheckJobCanRun>({
+							type: WorkerCommandType.CheckJobCanRun,
+							data: {
+								canRun,
+								status: command.startImmediate ? started ? JobStatus.RUNNING : JobStatus.FAILED_TO_START : JobStatus.QUEUED
+							}
 						})
 						break
 				}

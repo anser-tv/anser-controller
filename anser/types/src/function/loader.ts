@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 import winston = require('winston')
-import { VersionsAreCompatible } from '../..'
+import { FunctionDescription, JobRunConfig, VersionsAreCompatible } from '../..'
 import { logger as anserLogger } from '../logger/logger'
-import { AnserManifest } from './anser-manifest'
+import { AnserFunctionManifest } from './anser-manifest'
 import { FunctionDescriptionMap } from './description'
 
 export interface ConfigPackageFile {
@@ -31,7 +31,8 @@ export interface FunctionPackageFile {
  * Loads all functions available to a controller / worker.
  */
 export class FunctionLoader {
-	public loadedFunctions: FunctionDescriptionMap = { }
+	public loadedFunctions: FunctionDescriptionMap = new Map()
+	public functionManifestRequirePath: Map<string, AnserFunctionManifest> = new Map()
 	private logger: winston.Logger
 	private packageName: string
 	constructor (
@@ -70,7 +71,7 @@ export class FunctionLoader {
 	 * Warning: Synchronous! (For now)
 	 */
 	public ReloadFunctions /* istanbul ignore next */ (): void {
-		this.loadedFunctions = { }
+		this.loadedFunctions = new Map()
 		if (this.functionDirectory) {
 			this.logger.info('Reloading functions')
 			const functionPackagePath = path.join(this.functionDirectory, this.packageName)
@@ -93,7 +94,11 @@ export class FunctionLoader {
 					const funcs =  this.loadFunctionsFromFile(functionPath)
 					this.logger.info(JSON.stringify(funcs))
 
-					if (funcs) this.loadedFunctions = { ...this.loadedFunctions, ...funcs }
+					if (funcs) {
+						for (const [key, func] of funcs[Symbol.iterator]()) {
+							this.loadedFunctions.set(key, func)
+						}
+					}
 				})
 			} else {
 				this.logger.error(`No ${this.packageName} found in directory ${this.functionDirectory}`)
@@ -137,8 +142,56 @@ export class FunctionLoader {
 			}
 		}
 
-		this.logger.info(`File does not exist`)
+		this.logger.info(`File does not exist ${packagePath}`)
 		return false
+	}
+
+	/**
+	 * Checks whether a job can run on this worker.
+	 * @param job Job to run.
+	 */
+	public async CheckJobCanRun (job: JobRunConfig): Promise<boolean> { // TODO: Maybe return an object?
+		const manifest = this.getFunctionManifest(job.functionId)
+
+		if (!manifest) return false
+
+		return await this.canJobRun(job, manifest)
+	}
+
+	/**
+	 * Starts a job on this worker.
+	 * @param job Job to start.
+	 */
+	public async StartJob (job: JobRunConfig): Promise<boolean> {
+		const manifest = this.getFunctionManifest(job.functionId)
+
+		if (!manifest) return false
+
+		if (!(await this.canJobRun(job, manifest))) return false
+
+		return false
+	}
+
+	private async canJobRun (
+		job: JobRunConfig, manifest: AnserFunctionManifest
+	): Promise<boolean> {
+		let canRun = false
+
+		try {
+			canRun = await manifest.CanJobRun(job)
+		} catch {
+			this.logger.info(`Failed to call CanJobRun for function ${job.functionId}`)
+		}
+
+		return canRun
+	}
+
+	private getFunctionManifest (functionId: string): AnserFunctionManifest | undefined {
+		const func = this.loadedFunctions.get(functionId)
+
+		if (!func) return
+
+		return this.functionManifestRequirePath.get(functionId)
 	}
 
 	private loadFunctionsFromFile /* istanbul ignore next */ (functionPath: string): FunctionDescriptionMap | undefined {
@@ -156,11 +209,17 @@ export class FunctionLoader {
 		(file: FunctionPackageFile, functionPath: string): FunctionDescriptionMap {
 
 		/* istanbul ignore next */
-		let descriptions: FunctionDescriptionMap = { }
+		let descriptions: FunctionDescriptionMap = new Map()
 
 		/* istanbul ignore next */
 		if (file.main) {
-			descriptions = this.getFunctionsFromManifest(path.join(functionPath, file.main))
+			const manifestFile = path.join(functionPath, file.main)
+
+			try {
+				descriptions = this.getFunctionsFromManifest(manifestFile)
+			} catch {
+				this.logger.info(`Failed to call getFunctionsFromManifest for function ${manifestFile}`)
+			}
 		}
 
 		/* istanbul ignore next */
@@ -170,12 +229,20 @@ export class FunctionLoader {
 	private getFunctionsFromManifest /* istanbul ignore next */ (manifestPath: string): FunctionDescriptionMap {
 		/* istanbul ignore next */
 		this.logger.info(`Requiring ${path.join(process.cwd(), manifestPath)}`)
-		const manifest = require(path.join(process.cwd(), manifestPath)) as AnserManifest | undefined
+		const manifest = require(path.join(process.cwd(), manifestPath)) as AnserFunctionManifest | undefined
 
-		if (!manifest) return { }
+		if (!manifest) return new Map()
+
+		this.logger.info(`Required manifest`)
 
 		/* istanbul ignore next */
-		return manifest.GetFunctions()
+		const funcs = manifest.GetFunctions()
+
+		for (const [key] of funcs[Symbol.iterator]()) {
+			this.functionManifestRequirePath.set(key, manifest)
+		}
+
+		return funcs
 	}
 
 	private validateFile (file: FunctionPackageFile): boolean {

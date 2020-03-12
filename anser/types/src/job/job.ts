@@ -1,5 +1,6 @@
+import { ObjectId } from 'mongodb'
 import { Jobs } from '../db'
-import { JobRunConfig } from './job-run-config'
+import { JobRunConfig, JobRunConfigAPI } from './job-run-config'
 
 export enum TargetType {
 	WORKER = 'WORKER',
@@ -18,6 +19,7 @@ export enum JobStatus {
 }
 
 export interface JobStartRequestResponse {
+	jobId?: ObjectId
 	status: JobStatus
 	details: string
 }
@@ -25,11 +27,11 @@ export interface JobStartRequestResponse {
 export type JobTarget = { workerId: string } | { groupId: string } | { workerId: string, groupId: string }
 
 export function BodyIsJobRunConfig (body: any): boolean {
-	const template: Omit<JobRunConfig, 'GetConfigById' | 'GetInputById' | 'GetOutputById'> = {
+	const template: JobRunConfigAPI = {
 		functionId: '',
-		inputs: new Map(),
-		outputs: new Map(),
-		functionConfig: new Map()
+		inputs: { },
+		outputs: { },
+		functionConfig: { }
 	}
 
 	return Object.keys(body).sort().toString() === Object.keys(template).sort().toString()

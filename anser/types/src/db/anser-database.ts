@@ -48,7 +48,7 @@ export class AnserDatabase {
 	public async Connect (): Promise<void> {
 		try {
 			this.client = await connect(
-				this.url, { useUnifiedTopology: true, forceServerObjectId: true, connectTimeoutMS: 5000 }
+				this.url, { useUnifiedTopology: true, connectTimeoutMS: 5000 }
 			)
 			this.db = this.client.db('anser')
 			this.setupCollections()
