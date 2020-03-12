@@ -1,5 +1,5 @@
-import { JobStatus } from '../dist'
 import { FunctionDescriptionMap } from './function/description'
+import { JobStatus } from './job/job'
 import { WorkerCommand, WorkerCommandType } from './worker-commands/worker-commands'
 
 export interface Heartbeat {

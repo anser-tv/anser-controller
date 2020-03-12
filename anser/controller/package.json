@@ -2,18 +2,14 @@
   "name": "anser-controller",
   "version": "1.0.0",
   "description": "Anser Controller package",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "index.ts",
   "author": "Tom Lee",
   "license": "MIT",
   "scripts": {
-    "build": "yarn audit && yarn lint && yarn test && yarn clean && tsc",
-    "build:dev": "yarn clean && tsc",
-    "buildstart": "yarn build && yarn start",
-    "buildstart:dev": "yarn build:dev && yarn start:dev",
-    "clean": "rimraf dist",
+    "build": "yarn audit && yarn lint && yarn test",
+    "clean": "exit 0",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
-    "start": "node dist/index.js",
+    "start": "ts-node index.ts",
     "start:dev": "DEV=1 yarn start",
     "test": "yarn lint && jest --passWithNoTests --runInBand --detectOpenHandles --forceExit",
     "watch": "nodemon"
@@ -54,7 +50,7 @@
     "watch": [
       "src"
     ],
-    "exec": "yarn lint && tsc && DEV=true node dist/index.js",
+    "exec": "yarn start:dev",
     "ext": "ts"
   }
 }

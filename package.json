@@ -9,12 +9,8 @@
   "scripts": {
     "build:dev": "tsc --build tsconfig.json",
     "build:types": "yarn workspace anser-types build",
-    "build:worker": "yarn build:types && yarn workspace anser-worker build",
-    "build:controller": "yarn build:types && yarn workspace anser-controller build",
     "buildall": "yarn workspaces run build",
     "buildall:dev": "yarn workspaces run build:dev",
-    "buildstart:controller": "yarn workspace anser-types build:dev && yarn workspace anser-controller buildstart:dev",
-    "buildstart:worker": "yarn workspace anser-types build:dev && yarn workspace anser-worker buildstart:dev",
     "clean": "rimraf dist && yarn workspaces run clean",
     "startall": "concurrently --kill-others-on-fail \"yarn start:controller\" \"yarn start:worker\"",
     "startall:dev": "concurrently --kill-others-on-fail \"yarn start:controller:dev\" \"yarn start:worker:dev\"",
@@ -22,8 +18,6 @@
     "start:controller:dev": "yarn workspace anser-controller start:dev",
     "start:worker": "yarn workspace anser-worker start",
     "start:worker:dev": "yarn workspace anser-worker start:dev",
-    "buildandstart": "yarn buildall:dev && yarn startall",
-    "buildandstart:dev": "yarn buildall:dev && yarn startall:dev",
     "testall": "yarn workspaces run test"
   },
   "devDependencies": {

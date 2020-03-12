@@ -2,6 +2,7 @@ import {
 	FunctionLoader,
 	Heartbeat,
 	HeartbeatDataAny,
+	HeartbeatDataCheckJobCanRun,
 	HeartbeatDataListFunctions,
 	HeartbeatDataSystemInfo,
 	HeartbeatResponse,
@@ -116,7 +117,7 @@ export class AnserWorker {
 							started = await this._functionLoader.StartJob(command.job)
 						}
 						data = strict<HeartbeatDataCheckJobCanRun>({
-							type: WorkerCommandType.CheckJobCanRun,
+							command: WorkerCommandType.CheckJobCanRun,
 							data: {
 								canRun,
 								status: command.startImmediate ? started ? JobStatus.RUNNING : JobStatus.FAILED_TO_START : JobStatus.QUEUED

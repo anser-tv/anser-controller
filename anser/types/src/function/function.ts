@@ -1,5 +1,5 @@
 import winston = require('winston')
-import { JobStatus } from '../../dist'
+import { JobStatus } from '../job/job'
 import { logger as anserlog } from '../logger/logger'
 import { FunctionDescription } from './description'
 import { ValidateFunctionConfig } from './validate-config'
