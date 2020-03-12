@@ -4,6 +4,10 @@
 
 This package contains the controller for the Anser video pipeline manager.
 
+# Requirements
+
+Install ts-node `yarn add global ts-node`
+
 ## How to use (dev)
 
 `yarn && yarn watch`
