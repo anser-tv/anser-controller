@@ -1,4 +1,5 @@
 import {
+	CanJobRunData,
 	FunctionLoader,
 	Heartbeat,
 	HeartbeatDataAny,
@@ -94,33 +95,38 @@ export class AnserWorker {
 
 	private async processHeartbeatResponse (resp: HeartbeatResponse): Promise<boolean> {
 		if (resp && resp.commands && resp.commands.length) {
-			const actions = resp.commands.map(async (command) => {
-				logger.info(`Received command: ${command.type}`)
+			const actions = resp.commands.map(async (cmd) => {
+				logger.info(`Received command: ${cmd.command.type}`)
 				let data: HeartbeatDataAny | undefined
-				switch(command.type) {
+				switch(cmd.command.type) {
 					case WorkerCommandType.SendSystemInfo:
 						data = strict<HeartbeatDataSystemInfo>({
+							commandId: cmd._id,
 							command: WorkerCommandType.SendSystemInfo,
 							data: await this.getSystemInfo()
 						})
 						break
 					case WorkerCommandType.ListFunctions:
 						data = strict<HeartbeatDataListFunctions>({
+							commandId: cmd._id,
 							command: WorkerCommandType.ListFunctions,
 							data: this._functionLoader.GetFunctions()
 						})
 						break
 					case WorkerCommandType.CheckJobCanRun:
-						const canRun = await this._functionLoader.CheckJobCanRun(command.job)
-						let started = false
-						if (command.startImmediate && canRun) {
-							started = await this._functionLoader.StartJob(command.job)
+						const canRun = await this._functionLoader.CheckJobCanRun(cmd.command.job)
+						let startJob: Pick<CanJobRunData, 'canRun' | 'info' | 'status'> | undefined
+						if (cmd.command.startImmediate && canRun) {
+							startJob = await this._functionLoader.StartJob(cmd.command.job)
 						}
 						data = strict<HeartbeatDataCheckJobCanRun>({
+							commandId: cmd._id,
 							command: WorkerCommandType.CheckJobCanRun,
 							data: {
-								canRun,
-								status: command.startImmediate ? started ? JobStatus.RUNNING : JobStatus.FAILED_TO_START : JobStatus.QUEUED
+								jobId: cmd.command.jobId,
+								canRun: canRun.canRun,
+								status: canRun ? startJob ? startJob.status : JobStatus.FAILED_TO_START : JobStatus.FAILED_TO_START,
+								info: `${canRun.info ? `Can run: ${canRun.info}` : '' }` + `${startJob ? ` StartJob: ${startJob.info}` : '' }`
 							}
 						})
 						break

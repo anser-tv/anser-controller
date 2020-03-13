@@ -1,15 +1,12 @@
+import { ObjectID, ObjectId } from 'mongodb'
+import { WorkerCommandsDB } from './db/collections/worker-commands'
 import { FunctionDescriptionMap } from './function/description'
 import { JobStatus } from './job/job'
-import { WorkerCommand, WorkerCommandType } from './worker-commands/worker-commands'
+import { WorkerCommandType } from './worker-commands/worker-commands'
 
 export interface Heartbeat {
 	time: number,
 	data: HeartbeatDataAny[]
-}
-
-interface HeartbeatDataBase {
-	command: WorkerCommandType,
-	data: any
 }
 
 export interface SystemInfoData {
@@ -18,6 +15,19 @@ export interface SystemInfoData {
 	ram_used: number,
 	disk_capacity: number,
 	disk_usage: number
+}
+
+export interface CanJobRunData {
+	jobId: ObjectId
+	canRun: boolean
+	status?: JobStatus
+	info?: string
+}
+
+interface HeartbeatDataBase {
+	commandId: ObjectId,
+	command: WorkerCommandType,
+	data: any
 }
 
 export interface HeartbeatDataSystemInfo extends HeartbeatDataBase {
@@ -32,16 +42,13 @@ export interface HeartbeatDataListFunctions extends HeartbeatDataBase {
 
 export interface HeartbeatDataCheckJobCanRun extends HeartbeatDataBase {
 	command: WorkerCommandType.CheckJobCanRun,
-	data: {
-		canRun: boolean
-		status: JobStatus
-	}
+	data: CanJobRunData
 }
 
 export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions | HeartbeatDataCheckJobCanRun
 
 export interface HeartbeatResponse {
-	commands?: WorkerCommand[]
+	commands?: WorkerCommandsDB[]
 }
 
 export function BodyIsHeartbeat (body: any): boolean {

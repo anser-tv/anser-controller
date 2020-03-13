@@ -1,7 +1,8 @@
 import fs from 'fs'
 import path from 'path'
 import winston = require('winston')
-import { FunctionDescription, JobRunConfig, VersionsAreCompatible } from '../..'
+import { CanJobRunData, FunctionDescription, JobRunConfig, VersionsAreCompatible } from '../..'
+import { Job, JobStatus } from '../job/job'
 import { logger as anserLogger } from '../logger/logger'
 import { AnserFunctionManifest } from './anser-manifest'
 import { FunctionDescriptionMap } from './description'
@@ -150,26 +151,34 @@ export class FunctionLoader {
 	 * Checks whether a job can run on this worker.
 	 * @param job Job to run.
 	 */
-	public async CheckJobCanRun (job: JobRunConfig): Promise<boolean> { // TODO: Maybe return an object?
+	public async CheckJobCanRun (job: JobRunConfig): Promise<Pick<CanJobRunData, 'canRun' | 'info'>> {
 		const manifest = this.getFunctionManifest(job.functionId)
 
-		if (!manifest) return false
+		if (!manifest) return { canRun: false, info: `Worker cannot find function "${job.functionId}"` }
 
-		return await this.canJobRun(job, manifest)
+		const canRun = await this.canJobRun(job, manifest)
+
+		if (canRun) {
+			return { canRun: true }
+		} else {
+			return { canRun: false, info: 'Worker cannot run job' }
+		}
 	}
 
 	/**
 	 * Starts a job on this worker.
 	 * @param job Job to start.
 	 */
-	public async StartJob (job: JobRunConfig): Promise<boolean> {
+	public async StartJob (job: JobRunConfig): Promise<Pick<CanJobRunData, 'canRun' | 'info' | 'status'>> {
 		const manifest = this.getFunctionManifest(job.functionId)
 
-		if (!manifest) return false
+		if (!manifest) return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Worker cannot find function "${job.functionId}"` }
 
-		if (!(await this.canJobRun(job, manifest))) return false
+		if (!(await this.canJobRun(job, manifest))) {
+			return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Worker failed to start job` }
+		}
 
-		return false
+		return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Starting jobs is not supported yet` }
 	}
 
 	private async canJobRun (

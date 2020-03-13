@@ -1,5 +1,6 @@
 import {
 	AnserDatabase,
+	CanJobRunData,
 	FunctionDescription,
 	FunctionDescriptionMap,
 	FunctionLoader,
@@ -15,11 +16,12 @@ import {
 	WorkerCommand,
 	WorkerCommandCheckJobCanRun,
 	WorkerCommandListFunctions,
+	WorkerCommandsDB,
 	WorkerCommandSendSystemInfo,
 	WorkerCommandType,
 	WorkerStatus
 } from 'anser-types'
-import { ObjectId } from 'mongodb'
+import { ObjectId, ObjectID } from 'mongodb'
 import { Config } from '../config'
 import { ANSER_VERSION } from './app'
 
@@ -103,6 +105,7 @@ export class State {
 			{ workerId, time: heartbeat.time, data: heartbeat.data }
 		)
 		heartbeat.data.forEach(async (command) => {
+			await this._database.collections.COMMAND.deleteOne({ _id: new ObjectId(command.commandId) })
 			switch(command.command) {
 				case WorkerCommandType.SendSystemInfo:
 					if (this.IsValidSystemInfoData(command.data)) {
@@ -119,29 +122,27 @@ export class State {
 							{ upsert: true }
 						)
 					}
+					break
+				case WorkerCommandType.CheckJobCanRun:
+					if (this.IsValidCanJobRunData(command.data)) {
+						// no-op
+					}
+					break
 			}
 		})
-		const commands: WorkerCommand[] =
-			(await this._database.collections.COMMAND.find({ workerId }).toArray())
-				.map(((cmd) => ( { ...cmd.command } )))
 
 		const reqSystemInfo = forceRequestAll || await this.requestSystemInfo(workerId)
 		if (reqSystemInfo) {
-			commands.push(
-				strict<WorkerCommandSendSystemInfo>({
-					type: WorkerCommandType.SendSystemInfo
-				})
-			)
+			await this.requestSystemInfo(workerId)
 		}
 
 		const reqFunctionList = forceRequestAll || await this.requestFunctionList(workerId)
 		if (reqFunctionList) {
-			commands.push(
-				strict<WorkerCommandListFunctions>({
-					type: WorkerCommandType.ListFunctions
-				})
-			)
+			await this.requestFunctionList(workerId)
 		}
+
+		const commands: WorkerCommandsDB[] =
+			(await this._database.collections.COMMAND.find({ workerId }).toArray())
 
 		return { commands }
 	}
@@ -252,6 +253,16 @@ export class State {
 	}
 
 	/**
+	 * Returns true if data is valid CanJobRun data.
+	 * @param data Data to validate.
+	 */
+	public IsValidCanJobRunData (data: CanJobRunData): boolean {
+		const keys = Object.keys(data)
+
+		return keys.includes('canRun') && keys.includes('jobId')
+	}
+
+	/**
 	 * Starts a job on a targeted worker. Does not check if the job already exists.
 	 * @param workerId Worker to start job on.
 	 * @param req Job to start.
@@ -327,11 +338,14 @@ export class State {
 	}
 
 	private async manageState (): Promise<void> {
-		if (this._managingState) return Promise.resolve()
+		if (this._managingState) {
+			return Promise.resolve()
+		}
 		this._managingState = true
 		if (this._timeout) clearTimeout(this._timeout)
 
-		if (!this._database.collections) {
+		if (!this._database.collections && this._runManager) {
+			this._managingState = false
 			this._timeout = setTimeout(() => this.manageState(), STATE_MANAGEMENT_INTERVAL)
 			return
 		}
@@ -350,11 +364,55 @@ export class State {
 				this._database.collections.WORKER.updateOne({ _id: worker._id }, { $set: { status: WorkerStatus.OFFLINE } })
 				logger.info(`Worker ${worker.workerId} disconnected. Last seen: ${new Date(lastHeartBeat.time)}`)
 			}
+
+			const reqSystemInfo = await this.requestSystemInfo(worker.workerId)
+			if (reqSystemInfo) {
+				await this.getSystemInfoFromWorker(worker.workerId)
+			}
+
+			const reqFunctionList = await this.requestFunctionList(worker.workerId)
+			if (reqFunctionList) {
+				await this.getFunctionsFromWorker(worker.workerId)
+			}
 		}
+
+		this._managingState = false
 
 		/* istanbul ignore next */
 		if (this._runManager) {
 			this._timeout = setTimeout(() => this.manageState(), STATE_MANAGEMENT_INTERVAL)
 		}
+	}
+
+	private async getSystemInfoFromWorker (workerId: string): Promise<void> {
+		const existing = await this._database.collections.COMMAND.findOne({
+			workerId,
+			'command.type': WorkerCommandType.SendSystemInfo
+		})
+
+		if (existing) return
+
+		this._database.collections.COMMAND.insertOne({
+			workerId,
+			command: strict<WorkerCommandSendSystemInfo>({
+				type: WorkerCommandType.SendSystemInfo
+			})
+		})
+	}
+
+	private async getFunctionsFromWorker (workerId: string): Promise<void> {
+		const existing = await this._database.collections.COMMAND.findOne({
+			workerId,
+			'command.type': WorkerCommandType.ListFunctions
+		})
+
+		if (existing) return
+
+		this._database.collections.COMMAND.insertOne({
+			workerId,
+			command: strict<WorkerCommandListFunctions>({
+				type: WorkerCommandType.ListFunctions
+			})
+		})
 	}
 }
