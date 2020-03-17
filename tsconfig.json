@@ -7,8 +7,6 @@
 		"lib": ["es2019"],
 		"declaration": true,
 		"sourceMap": true,
-		"outDir": "./dist",
-		"rootDir": "./",
 
 		/* Strict Type-Checking Options */
 		"strict": true,
@@ -35,10 +33,10 @@
         }        
     ],
     "paths": {
-        "anser-types": ["anser/types/index.ts"],
+        "anser-types": ["anser/types"],
         "anser-function-gstreamer": ["anser/functions/anser-function-gstreamer"],
         "anser-core-functions": ["anser/functions/anser-core-function"],
-        "anser-worker": ["anser/worker/index.ts"],
-        "anser-controller": ["anser/controller/index.ts"]
+        "anser-worker": ["anser/worker"],
+        "anser-controller": ["anser/controller"]
     }
 }
