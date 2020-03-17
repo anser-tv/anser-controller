@@ -1,8 +1,8 @@
-import { ConfigType, FunctionConfig, FunctionDescription, VideoIO, VideoIOType } from '../function/description'
+import { ConfigType, FunctionConfig, FunctionDescription } from '../function/description'
 import { ConfigContraintType, FunctionRunConfig } from '../function/function'
+import { VideoIO, VideoIOType } from '../function/video-io/video-io'
 import { Job } from '../job/job'
 import { JobRunConfig } from '../job/job-run-config'
-import { strict } from '../strict'
 
 const sampleInput = new VideoIO('Input', 'input', VideoIOType.RTMP, '1080i50', '16:9')
 const sampleOutput = new VideoIO('Output', 'output', VideoIOType.RTMP, '1080i50', '16:9')

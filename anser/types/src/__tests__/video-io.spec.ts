@@ -1,4 +1,5 @@
-import { VideoIO, VideoIOType } from '../function/description'
+import { VideoOutput } from '../../dist'
+import { VideoIO, VideoIOType } from '../function/video-io/video-io'
 
 describe ('VideoIO', () => {
 	it ('Throws error with invalid format', () => {
@@ -40,5 +41,19 @@ describe ('VideoIO', () => {
 		expect(() => {
 			const badVideo = new VideoIO('', '', VideoIOType.RTMP, '1080i50', '0.775')
 		}).not.toThrowError()
+	})
+})
+
+describe ('VideoOutput', () => {
+	it ('Throws error with any format', () => {
+		expect(() => {
+			const badOutput = new VideoOutput('', '', VideoIOType.RTMP, 'any', '0.775')
+		}).toThrowError()
+	})
+
+	it ('Throws error with any aspect ratio', () => {
+		expect(() => {
+			const badOutput = new VideoOutput('', '', VideoIOType.RTMP, '1080i50', 'any')
+		}).toThrowError()
 	})
 })

@@ -1,5 +1,4 @@
-import { FunctionRunConfig } from '../..'
-import { VideoIO } from '../function/description'
+import { FunctionRunConfig, VideoIO, VideoOutput } from '../..'
 
 export interface JobRunConfigAPI {
 	functionId: string,
@@ -10,14 +9,14 @@ export interface JobRunConfigAPI {
 		[id: string]: VideoIO
 	}
 	outputs: {
-		[id: string]: VideoIO
+		[id: string]: VideoOutput
 	}
 }
 
 export function ParseRunConfigAPI (configApi: JobRunConfigAPI): JobRunConfig {
 	const conf: FunctionRunConfig = new Map()
 	const inputs: Map<string, VideoIO> = new Map()
-	const outputs: Map<string, VideoIO> = new Map()
+	const outputs: Map<string, VideoOutput> = new Map()
 
 	for (const [key, val] of Object.entries(configApi.functionConfig)) {
 		conf.set(key, val)
@@ -45,7 +44,7 @@ export class JobRunConfig {
 		public functionId: string,
 		public functionConfig: FunctionRunConfig,
 		public inputs: Map<string, VideoIO>,
-		public outputs: Map<string, VideoIO>
+		public outputs: Map<string, VideoOutput>
 	) {
 
 	}
@@ -67,7 +66,7 @@ export class JobRunConfig {
 	/**
 	 * Gets an output config from its ID.
 	 */
-	public GetOutputById (id: string): VideoIO | undefined {
+	public GetOutputById (id: string): VideoOutput | undefined {
 		return this.outputs.get(id)
 	}
 }

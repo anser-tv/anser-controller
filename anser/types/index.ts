@@ -10,6 +10,8 @@ export * from './src/worker-commands/worker-commands'
 export * from './src/logger/logger'
 export * from './src/strict'
 export * from './src/worker/worker'
+export * from './src/function/video-io/video-io'
+export * from './src/function/video-io/video-output'
 
 /**
  * Checks whether two versions of anser are compatible with each other.
