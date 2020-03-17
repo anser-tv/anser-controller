@@ -110,7 +110,7 @@ export class AnserWorker {
 						data = strict<HeartbeatDataListFunctions>({
 							commandId: cmd._id,
 							command: WorkerCommandType.ListFunctions,
-							data: this._functionLoader.GetFunctions()
+							data: Array.from(this._functionLoader.GetFunctions().entries())
 						})
 						break
 					case WorkerCommandType.CheckJobCanRun:

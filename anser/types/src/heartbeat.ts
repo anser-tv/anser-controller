@@ -1,6 +1,6 @@
-import { ObjectID, ObjectId } from 'mongodb'
+import { ObjectId } from 'mongodb'
 import { WorkerCommandsDB } from './db/collections/worker-commands'
-import { FunctionDescriptionMap } from './function/description'
+import { FunctionDescription } from './function/description'
 import { JobStatus } from './job/job'
 import { WorkerCommandType } from './worker-commands/worker-commands'
 
@@ -37,7 +37,7 @@ export interface HeartbeatDataSystemInfo extends HeartbeatDataBase {
 
 export interface HeartbeatDataListFunctions extends HeartbeatDataBase {
 	command: WorkerCommandType.ListFunctions,
-	data: FunctionDescriptionMap
+	data: [string, FunctionDescription][]
 }
 
 export interface HeartbeatDataCheckJobCanRun extends HeartbeatDataBase {

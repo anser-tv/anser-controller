@@ -114,10 +114,11 @@ export class State {
 					}
 					break
 				case WorkerCommandType.ListFunctions:
-					if (this.IsValidListFunctionsData(command.data)) {
+					const functionsData = new Map(command.data)
+					if (this.IsValidListFunctionsData(functionsData)) {
 						await this._database.collections.WORKER_FUNCTION.updateOne(
 							{ workerId },
-							{ $set: { functions: command.data, lastRecieved: Date.now() } },
+							{ $set: { functions: functionsData, lastRecieved: Date.now() } },
 							{ upsert: true }
 						)
 					}
@@ -277,6 +278,7 @@ export class State {
 			{ [key]: { $exists: true } }
 		)
 
+		// TODO: Check function exists on controller
 		if (!func) return { status: JobStatus.FAILED_TO_START, details: `Function ${req.functionId} does not exist` }
 
 		const insertDoc: StrippedJobsDB = {
