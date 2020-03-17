@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "rimraf": "^3.0.2",
-    "yarn": "^1.22.0"
+    "yarn": "^1.22.4"
   },
   "workspaces": [
     "anser/types",
