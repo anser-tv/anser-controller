@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn audit && yarn lint && yarn test",
+    "build:dev": "exit 0",
     "clean": "exit 0",
     "lint": "tslint -c 'tslint.json' 'src/**/*.ts'",
     "start": "ts-node index.ts",
