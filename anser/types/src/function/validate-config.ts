@@ -1,7 +1,7 @@
 import { ConfigContraintType, ConstraintMap, FunctionRunConfig } from './function'
 
 export function ValidateFunctionConfig (config: FunctionRunConfig, constraints: ConstraintMap): boolean {
-	for (const [key, constraint] of constraints[Symbol.iterator]()) {
+	constraints.forEach((constraint, key) => {
 		let confVal = config.get(key)
 		switch(constraint.type) {
 			case ConfigContraintType.STRING:
@@ -60,6 +60,6 @@ export function ValidateFunctionConfig (config: FunctionRunConfig, constraints: 
 				if (typeof constraint.acceptedValues[index] !== typeof confVal) return false
 				break
 		}
-	}
+	})
 	return true
 }

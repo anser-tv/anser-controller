@@ -1,5 +1,5 @@
-import { AnserFunctionGStreamerBase } from 'anser-function-gstreamer/src/function'
-import { AnserManifest, FunctionDescription } from 'anser-types'
+import { AnserFunctionManifest, FunctionDescription } from 'anser-types'
+import { AnserFunctionGStreamerBase } from './src/function'
 
 const descriptionFunctionGStreamerBasic: FunctionDescription = {
 	author: 'Tom Lee',
@@ -13,6 +13,7 @@ const descriptionFunctionGStreamerBasic: FunctionDescription = {
 	version: '1.0.0'
 }
 
-const manifest = new AnserManifest()
+const manifest = new AnserFunctionManifest()
 manifest.RegisterFunction(descriptionFunctionGStreamerBasic, AnserFunctionGStreamerBase)
-export const GetFunctions = manifest.GetFunctions
+
+export default manifest

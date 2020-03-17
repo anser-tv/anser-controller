@@ -5,7 +5,7 @@ import {
 	ConfigContraintType,
 	FunctionDescription,
 	FunctionRunConfig,
-	FunctionStatus,
+	JobStatus,
 	strict
 } from 'anser-types'
 import * as gstreamer from 'gstreamer-superficial'
@@ -25,7 +25,7 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	constructor (
 		public description: FunctionDescription,
 		public config: FunctionRunConfig,
-		public status: FunctionStatus = FunctionStatus.NOTUSED,
+		public status: JobStatus = JobStatus.UNKNOWN,
 		public logger?: winston.Logger
 	) {
 		super(description, config, status, logger)
@@ -71,12 +71,12 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 				switch(msg.type) {
 					case 'error':
 						this.logger?.error(msg)
-						this.status = FunctionStatus.ERROR
+						this.status = JobStatus.FAILED_TO_START
 						this.pipeline?.stop()
 						break
 					case 'eos':
 						this.logger?.info('End of stream')
-						this.status = FunctionStatus.STOPPED
+						this.status = JobStatus.STOPPED
 						this.pipeline?.stop()
 						break
 				}

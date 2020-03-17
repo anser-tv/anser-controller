@@ -13,7 +13,6 @@ import {
 	strict,
 	StrippedJobsDB,
 	SystemInfoData,
-	WorkerCommand,
 	WorkerCommandCheckJobCanRun,
 	WorkerCommandListFunctions,
 	WorkerCommandsDB,
@@ -21,7 +20,7 @@ import {
 	WorkerCommandType,
 	WorkerStatus
 } from 'anser-types'
-import { ObjectId, ObjectID } from 'mongodb'
+import { ObjectId } from 'mongodb'
 import { Config } from '../config'
 import { ANSER_VERSION } from './app'
 
@@ -44,7 +43,7 @@ export class State {
 		// 'mongodb://localhost:59923'
 		this._database = new AnserDatabase(config.dbUrl)
 		this._functionLoader = new FunctionLoader(config.functionsDirectory, ANSER_VERSION, logger, delayStart)
-		logger.info(`Functions: ${JSON.stringify(this._functionLoader.GetFunctions())}`)
+		logger.info(`Functions: ${JSON.stringify(Array.from(this._functionLoader.GetFunctions().keys()))}`)
 	}
 
 	/**

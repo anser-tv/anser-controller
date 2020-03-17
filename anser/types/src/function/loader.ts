@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import winston = require('winston')
-import { CanJobRunData, FunctionDescription, JobRunConfig, VersionsAreCompatible } from '../..'
+import { CanJobRunData, JobRunConfig, VersionsAreCompatible } from '../..'
 import { Job, JobStatus } from '../job/job'
 import { logger as anserLogger } from '../logger/logger'
 import { AnserFunctionManifest } from './anser-manifest'
@@ -92,13 +92,12 @@ export class FunctionLoader {
 						return
 					}
 
-					const funcs =  this.loadFunctionsFromFile(functionPath)
-					this.logger.info(JSON.stringify(funcs))
+					const funcs = this.loadFunctionsFromFile(functionPath)
 
 					if (funcs) {
-						for (const [key, func] of funcs[Symbol.iterator]()) {
-							this.loadedFunctions.set(key, func)
-						}
+						funcs.forEach((v, k) => {
+							this.loadedFunctions.set(k, v)
+						})
 					}
 				})
 			} else {
@@ -106,7 +105,7 @@ export class FunctionLoader {
 			}
 		}
 
-		this.logger.info(`Loaded ${Object.keys(this.loadedFunctions).length} functions`)
+		this.logger.info(`Loaded ${this.loadedFunctions.size} functions`)
 	}
 
 	/**
@@ -226,7 +225,8 @@ export class FunctionLoader {
 
 			try {
 				descriptions = this.getFunctionsFromManifest(manifestFile)
-			} catch {
+			} catch (err) {
+				if (err) this.logger.info(err)
 				this.logger.info(`Failed to call getFunctionsFromManifest for function ${manifestFile}`)
 			}
 		}
@@ -238,18 +238,17 @@ export class FunctionLoader {
 	private getFunctionsFromManifest /* istanbul ignore next */ (manifestPath: string): FunctionDescriptionMap {
 		/* istanbul ignore next */
 		this.logger.info(`Requiring ${path.join(process.cwd(), manifestPath)}`)
-		const manifest = require(path.join(process.cwd(), manifestPath)) as AnserFunctionManifest | undefined
+		const manifest =
+			require(path.join(process.cwd(), manifestPath)) as { default: AnserFunctionManifest } | undefined
 
 		if (!manifest) return new Map()
 
 		this.logger.info(`Required manifest`)
+		const funcs = manifest.default.GetFunctions()
 
-		/* istanbul ignore next */
-		const funcs = manifest.GetFunctions()
-
-		for (const [key] of funcs[Symbol.iterator]()) {
-			this.functionManifestRequirePath.set(key, manifest)
-		}
+		funcs.forEach((_v, k) => {
+			this.functionManifestRequirePath.set(k, manifest.default)
+		})
 
 		return funcs
 	}
