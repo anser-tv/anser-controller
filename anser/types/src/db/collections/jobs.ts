@@ -10,6 +10,7 @@ export interface Jobs {
 export interface JobsDB extends Jobs {
 	_id: ObjectID
 	status: JobStatus
+	info?: string
 }
 
 export type StrippedJobsDB = Omit<JobsDB, '_id'>

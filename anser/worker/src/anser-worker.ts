@@ -128,7 +128,7 @@ export class AnserWorker {
 								jobId: cmd.command.jobId,
 								canRun: canRun.canRun,
 								status: canRun ? startJob ? startJob.status : JobStatus.FAILED_TO_START : JobStatus.FAILED_TO_START,
-								info: `${canRun.info ? `Can run: ${canRun.info}` : '' }` + `${startJob ? ` StartJob: ${startJob.info}` : '' }`
+								info: `${canRun.info ? `Can run: ${canRun.info}` : '' }` + `${startJob && startJob.info ? ` StartJob: ${startJob.info}` : '' }`
 							}
 						})
 						break

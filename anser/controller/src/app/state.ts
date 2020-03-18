@@ -142,6 +142,7 @@ export class State {
 								logger.info(`Job "${command.data.jobId}" failed to start on worker "${workerId}"${command.data.info ? ` Reason: ${command.data.info}` : ''}`)
 							}
 						}
+						await this._database.collections.JOB.updateOne({ _id: new ObjectId(command.data.jobId) }, { $set: { status: command.data.status, info: command.data.info } })
 					}
 					break
 			}

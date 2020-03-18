@@ -177,7 +177,13 @@ export class FunctionLoader {
 			return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Worker failed to start job` }
 		}
 
-		return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Starting jobs is not supported yet` }
+		const started = await manifest.StartJob(job)
+
+		if (!started) {
+			return { canRun: true, status: JobStatus.FAILED_TO_START, info: `Job can run but failed to start` }
+		}
+
+		return { canRun: true , status: JobStatus.RUNNING }
 	}
 
 	private async canJobRun (

@@ -29,21 +29,23 @@ export class AnserFunctionManifest {
 	 * @param runConfig Config of the job.
 	 */
 	public async CanJobRun (runConfig: JobRunConfig): Promise<boolean> {
-		const func = this._functionClasses.get(runConfig.functionId)
+		const run = this.getAnserFunction(runConfig)
 
-		if (!func) return false
-
-		const desc = this._functionMap.get(runConfig.functionId)
-
-		if (!desc) return false
-
-		const run = new func(
-			desc,
-			runConfig.functionConfig,
-			JobStatus.STARTING
-		)
+		if (!run) return false
 
 		return await run.CanRun()
+	}
+
+	/**
+	 * Starts a job, returns true if successful.
+	 * @param runConfig Job to start.
+	 */
+	public async StartJob (runConfig: JobRunConfig): Promise<boolean> {
+		const run = this.getAnserFunction(runConfig)
+
+		if (!run) return false
+
+		return await run.Start()
 	}
 
 	/**
@@ -54,5 +56,17 @@ export class AnserFunctionManifest {
 		const id = IdFromFunction(desc)
 		this._functionMap.set(id, desc)
 		this._functionClasses.set(id, cls)
+	}
+
+	private getAnserFunction (runConfig: JobRunConfig): AnserFunction | undefined {
+		const func = this._functionClasses.get(runConfig.functionId)
+
+		if (!func) return
+
+		const desc = this._functionMap.get(runConfig.functionId)
+
+		if (!desc) return
+
+		return new func(desc, runConfig.functionConfig, JobStatus.STARTING)
 	}
 }

@@ -1,6 +1,7 @@
 import { FunctionRunConfig, VideoIO, VideoOutput } from '../..'
 import { VideoIOJSON } from '../function/video-io/video-io'
 import { VideoOutputJSON } from '../function/video-io/video-output'
+import { logger } from '../logger/logger'
 
 export interface JobRunConfigJSON {
 	functionId: string,
@@ -14,13 +15,16 @@ export function JobRunConfigFromJSON (configApi: JobRunConfigJSON): JobRunConfig
 	const inputs: Map<string, VideoIO> = new Map()
 	const outputs: Map<string, VideoOutput> = new Map()
 
-	for (const [key, val] of Object.entries(new Map(configApi.functionConfig))) {
+	logger.info(typeof configApi.functionConfig)
+	logger.info(JSON.stringify(configApi.functionConfig as any))
+	for (const [key, val] of configApi.functionConfig) {
+		logger.info(`KEY: ${key}`)
 		conf.set(key, val)
 	}
-	for (const [key, val] of Object.entries(new Map(configApi.inputs))) {
+	for (const [key, val] of configApi.inputs) {
 		inputs.set(key, new VideoIO(val.name, val.id, val.type, val.format, val.aspectRatio))
 	}
-	for (const [key, val] of Object.entries(new Map(configApi.outputs))) {
+	for (const [key, val] of configApi.outputs) {
 		outputs.set(key, new VideoOutput(val.name, val.id, val.type, val.format, val.aspectRatio))
 	}
 

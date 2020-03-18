@@ -23,12 +23,14 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	public pipelineString?: string
 
 	constructor (
-		public description: FunctionDescription,
-		public config: FunctionRunConfig,
-		public status: JobStatus = JobStatus.UNKNOWN,
-		public logger?: winston.Logger
+		description: FunctionDescription,
+		config: FunctionRunConfig,
+		status: JobStatus = JobStatus.UNKNOWN,
+		logger?: winston.Logger
 	) {
 		super(description, config, status, logger)
+
+		this.pipelineString = config.get('pipeline')?.toString()
 	}
 
 	/**
@@ -49,6 +51,7 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	public Stop (): Promise<boolean> {
 		if (this.pipeline) {
 			this.pipeline.stop()
+			delete this.pipeline
 		}
 
 		return Promise.resolve(true)
@@ -57,11 +60,8 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	/**
 	 * Validates the function.
 	 */
-	public Validate (): boolean {
-		return !!this.config.get('pipeline')
-	}
 	protected validate (): boolean {
-		throw new Error('Method not implemented.')
+		return !!this.config.get('pipeline')
 	}
 
 	protected start (): Promise<boolean> {
@@ -82,9 +82,10 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 				}
 			})
 			this.pipeline.play()
+			return Promise.resolve(true)
+		} else {
+			return Promise.reject(`Pipeline is already running`)
 		}
-
-		return Promise.reject(`Pipeline is already running`)
 	}
 
 	protected canRun (): Promise<boolean> {

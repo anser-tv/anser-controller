@@ -41,7 +41,7 @@ export interface ConfigContraintNumber extends ConfigConstraintBase {
 
 export interface ConfigConstraintDropdown extends ConfigConstraintBase {
 	type: ConfigContraintType.DROPDOWN,
-	acceptedValues: Array<number|string>
+	acceptedValues: (number|string)[]
 }
 
 export interface ConfigContraintBoolean extends ConfigConstraintBase {
