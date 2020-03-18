@@ -3,9 +3,9 @@ import {
 	BodyIsJobRunConfig,
 	Heartbeat,
 	logger,
-	ParseRunConfigAPI,
 	VersionsAreCompatible,
-	WorkerStatus
+	WorkerStatus,
+	JobRunConfigFromJSON
 } from 'anser-types'
 import express from 'express'
 import asyncHandler from 'express-async-handler'
@@ -334,7 +334,7 @@ export class App {
 					this.sendBadRequest(res, `Invalid function`)
 				} else {
 					try {
-						const runConf = ParseRunConfigAPI(req.body)
+						const runConf = JobRunConfigFromJSON(req.body)
 						const result = await this.state.AddJobToWorker(req.params.workerId, runConf)
 						res.send(result)
 					} catch (err) {

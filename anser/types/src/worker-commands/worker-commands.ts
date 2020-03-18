@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { JobRunConfig } from '../job/job-run-config'
+import { JobRunConfigJSON } from '../job/job-run-config'
 
 export const enum WorkerCommandType {
 	SendSystemInfo = 'SEND_SYSTEM_INFO',
@@ -23,7 +23,7 @@ export interface WorkerCommandSendCaptureDevices extends WorkerCommandBase {
 export interface WorkerCommandCheckJobCanRun extends WorkerCommandBase {
 	type: WorkerCommandType.CheckJobCanRun
 	jobId: ObjectId
-	job: JobRunConfig
+	job: JobRunConfigJSON
 	startImmediate: boolean
 }
 

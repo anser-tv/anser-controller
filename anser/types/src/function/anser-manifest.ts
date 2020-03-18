@@ -29,7 +29,7 @@ export class AnserFunctionManifest {
 	 * @param runConfig Config of the job.
 	 */
 	public async CanJobRun (runConfig: JobRunConfig): Promise<boolean> {
-		const func = this._functionClasses.get('')
+		const func = this._functionClasses.get(runConfig.functionId)
 
 		if (!func) return false
 
@@ -51,6 +51,8 @@ export class AnserFunctionManifest {
 	 * @param desc Function to register.
 	 */
 	public RegisterFunction (desc: FunctionDescription, cls: Constructor<AnserFunction>): void {
-		this._functionMap.set(IdFromFunction(desc), desc)
+		const id = IdFromFunction(desc)
+		this._functionMap.set(id, desc)
+		this._functionClasses.set(id, cls)
 	}
 }

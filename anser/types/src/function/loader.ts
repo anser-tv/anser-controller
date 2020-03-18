@@ -187,7 +187,8 @@ export class FunctionLoader {
 
 		try {
 			canRun = await manifest.CanJobRun(job)
-		} catch {
+		} catch (err) {
+			this.logger.error(err)
 			this.logger.info(`Failed to call CanJobRun for function ${job.functionId}`)
 		}
 

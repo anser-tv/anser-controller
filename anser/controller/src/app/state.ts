@@ -18,7 +18,11 @@ import {
 	WorkerCommandsDB,
 	WorkerCommandSendSystemInfo,
 	WorkerCommandType,
-	WorkerStatus
+	WorkerStatus,
+	JobIsInRunningState,
+	JobRunConfigFromJSON,
+	JobRunConfigJSON,
+	JobRunConfigToJSON
 } from 'anser-types'
 import { ObjectId } from 'mongodb'
 import { Config } from '../config'
@@ -125,7 +129,19 @@ export class State {
 					break
 				case WorkerCommandType.CheckJobCanRun:
 					if (this.IsValidCanJobRunData(command.data)) {
-						// no-op
+						if (command.data.canRun) {
+							if (command.data.status && JobIsInRunningState(command.data.status)) {
+								logger.info(`Job "${command.data.jobId}" is in running state on worker "${workerId}"`)
+							} else {
+								logger.info(`Job "${command.data.jobId}" can run on worker "${workerId}"`)
+							}
+						} else {
+							if (!command.data.canRun) {
+								logger.info(`Job "${command.data.jobId}" cannot run on worker "${workerId}"${command.data.info ? ` Reason: ${command.data.info}` : ''}`)
+							} else if (!command.data.status || command.data.status === JobStatus.FAILED_TO_START) {
+								logger.info(`Job "${command.data.jobId}" failed to start on worker "${workerId}"${command.data.info ? ` Reason: ${command.data.info}` : ''}`)
+							}
+						}
 					}
 					break
 			}
@@ -294,7 +310,7 @@ export class State {
 			command: strict<WorkerCommandCheckJobCanRun>({
 				type: WorkerCommandType.CheckJobCanRun,
 				jobId: id.insertedId,
-				job: req,
+				job: JobRunConfigToJSON(req),
 				startImmediate: true
 			})
 		})

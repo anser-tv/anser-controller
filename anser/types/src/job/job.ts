@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb'
 import { Jobs } from '../db'
-import { JobRunConfig, JobRunConfigAPI } from './job-run-config'
+import { JobRunConfig, JobRunConfigJSON } from './job-run-config'
 
 export enum TargetType {
 	WORKER = 'WORKER',
@@ -27,14 +27,22 @@ export interface JobStartRequestResponse {
 export type JobTarget = { workerId: string } | { groupId: string } | { workerId: string, groupId: string }
 
 export function BodyIsJobRunConfig (body: any): boolean {
-	const template: JobRunConfigAPI = {
+	const template: JobRunConfigJSON = {
 		functionId: '',
-		inputs: { },
-		outputs: { },
-		functionConfig: { }
+		inputs: [],
+		outputs: [],
+		functionConfig: []
 	}
 
 	return Object.keys(body).sort().toString() === Object.keys(template).sort().toString()
+}
+
+/**
+ * Returns true if a job is in any state that indicates that it is running.
+ * @param status Status of the job.
+ */
+export function JobIsInRunningState (status: JobStatus): boolean {
+	return status === JobStatus.STARTING || status === JobStatus.RUNNING
 }
 
 /**

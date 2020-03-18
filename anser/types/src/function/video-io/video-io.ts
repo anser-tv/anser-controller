@@ -3,10 +3,18 @@ export enum VideoIOType {
 	RTMP
 }
 
+export interface VideoIOJSON {
+	name: string,
+	id: string,
+	type: VideoIOType,
+	format: string,
+	aspectRatio: string
+}
+
 /**
  * Represents an IO video stream.
  */
-export class VideoIO {
+export class VideoIO implements VideoIOJSON {
 	protected _format: string
 	protected _aspectRatio: string
 

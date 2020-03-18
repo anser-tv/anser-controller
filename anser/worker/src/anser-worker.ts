@@ -11,7 +11,8 @@ import {
 	logger,
 	strict,
 	SystemInfoData,
-	WorkerCommandType
+	WorkerCommandType,
+	JobRunConfigFromJSON
 } from 'anser-types'
 import { post } from 'request-promise'
 import { fsSize } from 'systeminformation'
@@ -114,10 +115,11 @@ export class AnserWorker {
 						})
 						break
 					case WorkerCommandType.CheckJobCanRun:
-						const canRun = await this._functionLoader.CheckJobCanRun(cmd.command.job)
+						const runConfig = JobRunConfigFromJSON(cmd.command.job)
+						const canRun = await this._functionLoader.CheckJobCanRun(runConfig)
 						let startJob: Pick<CanJobRunData, 'canRun' | 'info' | 'status'> | undefined
-						if (cmd.command.startImmediate && canRun) {
-							startJob = await this._functionLoader.StartJob(cmd.command.job)
+						if (cmd.command.startImmediate && canRun.canRun) {
+							startJob = await this._functionLoader.StartJob(runConfig)
 						}
 						data = strict<HeartbeatDataCheckJobCanRun>({
 							commandId: cmd._id,

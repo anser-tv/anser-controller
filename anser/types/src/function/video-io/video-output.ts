@@ -1,4 +1,8 @@
-import { VideoIO, VideoIOType } from './video-io'
+import { VideoIO, VideoIOType, VideoIOJSON } from './video-io'
+
+export interface VideoOutputJSON extends VideoIOJSON {
+	output: true
+}
 
 export class VideoOutput extends VideoIO {
 	constructor (

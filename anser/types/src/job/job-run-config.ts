@@ -1,31 +1,27 @@
 import { FunctionRunConfig, VideoIO, VideoOutput } from '../..'
+import { VideoIOJSON } from '../function/video-io/video-io'
+import { VideoOutputJSON } from '../function/video-io/video-output'
 
-export interface JobRunConfigAPI {
+export interface JobRunConfigJSON {
 	functionId: string,
-	functionConfig: {
-		[id: string]: string | number | boolean
-	},
-	inputs: {
-		[id: string]: VideoIO
-	}
-	outputs: {
-		[id: string]: VideoOutput
-	}
+	inputs: [string, VideoIOJSON][],
+	outputs: [string, VideoOutputJSON][],
+	functionConfig: [string, number | string | boolean][]
 }
 
-export function ParseRunConfigAPI (configApi: JobRunConfigAPI): JobRunConfig {
+export function JobRunConfigFromJSON (configApi: JobRunConfigJSON): JobRunConfig {
 	const conf: FunctionRunConfig = new Map()
 	const inputs: Map<string, VideoIO> = new Map()
 	const outputs: Map<string, VideoOutput> = new Map()
 
-	for (const [key, val] of Object.entries(configApi.functionConfig)) {
+	for (const [key, val] of Object.entries(new Map(configApi.functionConfig))) {
 		conf.set(key, val)
 	}
-	for (const [key, val] of Object.entries(configApi.inputs)) {
-		inputs.set(key, val)
+	for (const [key, val] of Object.entries(new Map(configApi.inputs))) {
+		inputs.set(key, new VideoIO(val.name, val.id, val.type, val.format, val.aspectRatio))
 	}
-	for (const [key, val] of Object.entries(configApi.outputs)) {
-		outputs.set(key, val)
+	for (const [key, val] of Object.entries(new Map(configApi.outputs))) {
+		outputs.set(key, new VideoOutput(val.name, val.id, val.type, val.format, val.aspectRatio))
 	}
 
 	return new JobRunConfig(
@@ -34,6 +30,26 @@ export function ParseRunConfigAPI (configApi: JobRunConfigAPI): JobRunConfig {
 		inputs,
 		outputs
 	)
+}
+
+export function JobRunConfigToJSON (config: JobRunConfig):  JobRunConfigJSON {
+	return {
+			functionId: config.functionId,
+			inputs: Array.from(config.inputs.entries()),
+			outputs: Array.from(config.outputs.entries(), o => {
+				const props = o[1]
+				const ret: VideoOutputJSON = {
+					id: props.id,
+					format: props.format,
+					aspectRatio: props.aspectRatio,
+					name: props.name,
+					type: props.type,
+					output: true
+				}
+				return [o[0], ret]
+			}),
+			functionConfig: Array.from(config.functionConfig.entries())
+	}
 }
 
 /**
