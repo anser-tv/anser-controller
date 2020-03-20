@@ -12,7 +12,9 @@ import {
 	strict,
 	SystemInfoData,
 	WorkerCommandType,
-	JobRunConfigFromJSON
+	JobRunConfigFromJSON,
+	HeartbeatDataStopJob,
+	ObjectId
 } from 'anser-types'
 import { post } from 'request-promise'
 import { fsSize } from 'systeminformation'
@@ -119,7 +121,7 @@ export class AnserWorker {
 						const canRun = await this._functionLoader.CheckJobCanRun(runConfig)
 						let startJob: Pick<CanJobRunData, 'canRun' | 'info' | 'status'> | undefined
 						if (cmd.command.startImmediate && canRun.canRun) {
-							startJob = await this._functionLoader.StartJob(runConfig)
+							startJob = await this._functionLoader.StartJob(new ObjectId(cmd.command.jobId).toHexString(), runConfig)
 						}
 						data = strict<HeartbeatDataCheckJobCanRun>({
 							commandId: cmd._id,
@@ -132,6 +134,14 @@ export class AnserWorker {
 							}
 						})
 						break
+					case WorkerCommandType.StopJob:
+						const stopped = await this._functionLoader.StopJob(new ObjectId(cmd.command.jobId).toHexString())
+						data = strict<HeartbeatDataStopJob>({
+							commandId: cmd._id,
+							command: WorkerCommandType.StopJob,
+							data: { stopped }
+						})
+						break
 				}
 				if (data) {
 					if (this._nextHeartbeat.data && this._nextHeartbeat.data.length >= 0) {
@@ -142,9 +152,9 @@ export class AnserWorker {
 				}
 			})
 			await Promise.all(actions)
-			return Promise.resolve(true)
+			return true
 		} else {
-			return Promise.resolve(false)
+			return false
 		}
 	}
 

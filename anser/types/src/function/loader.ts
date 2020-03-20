@@ -36,6 +36,8 @@ export class FunctionLoader {
 	public functionManifestRequirePath: Map<string, AnserFunctionManifest> = new Map()
 	private logger: winston.Logger
 	private packageName: string
+	#_jobIdToFunctionId: Map<string, string> = new Map()
+
 	constructor (
 		/** Path to functions */
 		public functionDirectory: string,
@@ -168,22 +170,42 @@ export class FunctionLoader {
 	 * Starts a job on this worker.
 	 * @param job Job to start.
 	 */
-	public async StartJob (job: JobRunConfig): Promise<Pick<CanJobRunData, 'canRun' | 'info' | 'status'>> {
+	public async StartJob (jobId: string, job: JobRunConfig): Promise<Pick<CanJobRunData, 'canRun' | 'info' | 'status'>> {
 		const manifest = this.getFunctionManifest(job.functionId)
 
 		if (!manifest) return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Worker cannot find function "${job.functionId}"` }
+
+		this.#_jobIdToFunctionId.set(jobId, job.functionId)
 
 		if (!(await this.canJobRun(job, manifest))) {
 			return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Worker failed to start job` }
 		}
 
-		const started = await manifest.StartJob(job)
+		const started = await manifest.StartJob(jobId, job)
 
 		if (!started) {
 			return { canRun: true, status: JobStatus.FAILED_TO_START, info: `Job can run but failed to start` }
 		}
 
 		return { canRun: true , status: JobStatus.RUNNING }
+	}
+
+	/**
+	 * Stops a job on this worker.
+	 * @param jobId Job to stop.
+	 */
+	public async StopJob (jobId: string): Promise<boolean> {
+		const functionId = this.#_jobIdToFunctionId.get(jobId)
+
+		if (!functionId) return false
+
+		const manifest = this.getFunctionManifest(functionId)
+
+		if (!manifest) return false
+
+		const stopped = await manifest.StopJob(jobId)
+
+		return stopped
 	}
 
 	private async canJobRun (

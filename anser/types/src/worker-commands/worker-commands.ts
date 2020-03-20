@@ -4,8 +4,9 @@ import { JobRunConfigJSON } from '../job/job-run-config'
 export const enum WorkerCommandType {
 	SendSystemInfo = 'SEND_SYSTEM_INFO',
 	SendCaptureDevices = 'SEND_CAPTURE_DEVICES',
+	ListFunctions = 'LIST_FUNCTIONS',
 	CheckJobCanRun = 'CHECK_JOB_CAN_RUN',
-	ListFunctions = 'LIST_FUNCTIONS'
+	StopJob = 'STOP_JOB'
 }
 
 export interface WorkerCommandBase {
@@ -27,6 +28,11 @@ export interface WorkerCommandCheckJobCanRun extends WorkerCommandBase {
 	startImmediate: boolean
 }
 
+export interface WorkerCommandStopJob extends WorkerCommandBase {
+	type: WorkerCommandType.StopJob,
+	jobId: ObjectId
+}
+
 export interface WorkerCommandListFunctions extends WorkerCommandBase {
 	type: WorkerCommandType.ListFunctions
 }
@@ -35,4 +41,5 @@ export type WorkerCommand =
 	WorkerCommandSendSystemInfo |
 	WorkerCommandSendCaptureDevices |
 	WorkerCommandCheckJobCanRun |
-	WorkerCommandListFunctions
+	WorkerCommandListFunctions |
+	WorkerCommandStopJob

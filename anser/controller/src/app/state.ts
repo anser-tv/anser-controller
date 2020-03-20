@@ -22,7 +22,9 @@ import {
 	JobIsInRunningState,
 	JobRunConfigFromJSON,
 	JobRunConfigJSON,
-	JobRunConfigToJSON
+	JobRunConfigToJSON,
+	TargetType,
+	WorkerCommandStopJob
 } from 'anser-types'
 import { ObjectId } from 'mongodb'
 import { Config } from '../config'
@@ -290,7 +292,6 @@ export class State {
 		if (!worker) return { status: JobStatus.FAILED_TO_START, details: `Worker ${workerId} does not exist` }
 
 		const key = `functions.${req.functionId}`
-		logger.info(key)
 		const func = await this._database.collections.WORKER_FUNCTION.findOne(
 			{ [key]: { $exists: true } }
 		)
@@ -300,13 +301,13 @@ export class State {
 
 		const insertDoc: StrippedJobsDB = {
 			status: JobStatus.STARTING,
-			target: { workerId },
+			target: { type: TargetType.WORKER, workerId },
 			runConfig: req
 		}
 
 		const id = await this._database.collections.JOB.insertOne(insertDoc)
 
-		this._database.collections.COMMAND.insertOne({
+		await this._database.collections.COMMAND.insertOne({
 			workerId,
 			command: strict<WorkerCommandCheckJobCanRun>({
 				type: WorkerCommandType.CheckJobCanRun,
@@ -317,6 +318,38 @@ export class State {
 		})
 
 		return { status: JobStatus.STARTING, jobId: id.insertedId, details: `Starting job ${id.insertedId}` }
+	}
+
+	/**
+	 * Stops a job with a given Id.
+	 * @param jobId Job to stop.
+	 */
+	public async StopJob (jobId: string): Promise<boolean> { // TODO: Return something useful
+		const job = await this._database.collections.JOB.findOne({ _id: new ObjectId(jobId) })
+
+		if (!job) return true
+
+		const target = job.target
+		let workerId = ''
+
+		if (target.type !== TargetType.GROUP) {
+			workerId = target.workerId
+		}
+
+		if (workerId === '') return true
+
+		const worker = await this._database.collections.WORKER.findOne({ workerId })
+
+		if (!worker) return true
+
+		await this._database.collections.COMMAND.insertOne({
+			workerId, command: strict<WorkerCommandStopJob>({
+				type: WorkerCommandType.StopJob,
+				jobId: new ObjectId(jobId)
+			})
+		})
+
+		return true
 	}
 
 	private async requestSystemInfo (workerId: string): Promise<boolean> {

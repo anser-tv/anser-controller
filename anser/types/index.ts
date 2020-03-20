@@ -12,6 +12,7 @@ export * from './src/strict'
 export * from './src/worker/worker'
 export * from './src/function/video-io/video-io'
 export * from './src/function/video-io/video-output'
+export { ObjectId } from 'mongodb'
 
 /**
  * Checks whether two versions of anser are compatible with each other.

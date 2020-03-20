@@ -2,6 +2,7 @@ import { AnserFunction, JobStatus } from '../..'
 import { JobRunConfig } from '../job/job-run-config'
 import { FunctionDescription, FunctionDescriptionMap, IdFromFunction } from './description'
 import { AnserFunctionParams } from './function'
+import { logger } from '../logger/logger'
 
 type Constructor<T> = new (
 	description: AnserFunctionParams['description'],
@@ -16,6 +17,7 @@ export class AnserFunctionManifest {
 
 	private _functionMap: FunctionDescriptionMap = new Map()
 	private _functionClasses: Map<string, Constructor<AnserFunction>> = new Map()
+	private _runingJobs: Map<string, AnserFunction> = new Map()
 
 	/**
 	 * Returns all registered functions.
@@ -40,12 +42,44 @@ export class AnserFunctionManifest {
 	 * Starts a job, returns true if successful.
 	 * @param runConfig Job to start.
 	 */
-	public async StartJob (runConfig: JobRunConfig): Promise<boolean> {
+	public async StartJob (jobId: string, runConfig: JobRunConfig): Promise<boolean> {
 		const run = this.getAnserFunction(runConfig)
 
 		if (!run) return false
 
-		return await run.Start()
+		let started = false
+
+		try {
+			started = await run.Start()
+		} catch (err) {
+			logger.error(err)
+		}
+
+		if (started) {
+			this._runingJobs.set(jobId, run)
+		}
+
+		return started
+	}
+
+	/**
+	 * Stops a job, returns true if successful.
+	 * @param jobId Job to stop.
+	 */
+	public async StopJob (jobId: string): Promise<boolean> {
+		const job = this._runingJobs.get(jobId)
+
+		if (!job) return false
+
+		let stopped = false
+
+		try {
+			stopped = await job.Stop()
+		} catch (err) {
+			logger.error(err)
+		}
+
+		return stopped
 	}
 
 	/**

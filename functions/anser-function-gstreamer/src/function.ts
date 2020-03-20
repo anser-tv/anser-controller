@@ -48,13 +48,13 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 	/**
 	 * Stops the pipeline.
 	 */
-	public Stop (): Promise<boolean> {
+	public async Stop (): Promise<boolean> {
 		if (this.pipeline) {
 			this.pipeline.stop()
 			delete this.pipeline
 		}
 
-		return Promise.resolve(true)
+		return true
 	}
 
 	/**

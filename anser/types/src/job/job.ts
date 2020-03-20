@@ -4,7 +4,8 @@ import { JobRunConfig, JobRunConfigJSON } from './job-run-config'
 
 export enum TargetType {
 	WORKER = 'WORKER',
-	GROUP = 'GROUP'
+	GROUP = 'GROUP',
+	WORKER_AND_GROUP = 'WORKER_AND_GROUP'
 }
 
 export enum JobStatus {
@@ -24,7 +25,27 @@ export interface JobStartRequestResponse {
 	details: string
 }
 
-export type JobTarget = { workerId: string } | { groupId: string } | { workerId: string, groupId: string }
+export interface JobTargetBase {
+	type: TargetType
+}
+
+export interface JobTargetWorker {
+	type: TargetType.WORKER
+	workerId: string
+}
+
+export interface JobTargetGroup {
+	type: TargetType.GROUP
+	groupId: string
+}
+
+export interface JobTargetWorkerAndGroup {
+	type: TargetType.WORKER_AND_GROUP,
+	workerId: string,
+	groupId: string
+}
+
+export type JobTarget = JobTargetWorker | JobTargetGroup | JobTargetWorkerAndGroup
 
 export function BodyIsJobRunConfig (body: any): boolean {
 	const template: JobRunConfigJSON = {

@@ -344,5 +344,18 @@ export class App {
 				}
 			})
 		)
+
+		this.app.post(
+			`/anser/jobs/stop/:jobId`,
+			asyncHandler(async (req: express.Request, res: express.Response) => {
+				try {
+					const result = await this.state.StopJob(req.params.jobId)
+					res.send(result)
+				} catch (err) {
+					logger.error(err)
+					res.status(500).end()
+				}
+			})
+		)
 	}
 }

@@ -45,7 +45,14 @@ export interface HeartbeatDataCheckJobCanRun extends HeartbeatDataBase {
 	data: CanJobRunData
 }
 
-export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions | HeartbeatDataCheckJobCanRun
+export interface HeartbeatDataStopJob extends HeartbeatDataBase {
+	command: WorkerCommandType.StopJob,
+	data: {
+		stopped: boolean
+	}
+}
+
+export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions | HeartbeatDataCheckJobCanRun | HeartbeatDataStopJob
 
 export interface HeartbeatResponse {
 	commands?: WorkerCommandsDB[]
