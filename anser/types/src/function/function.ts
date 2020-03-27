@@ -60,8 +60,11 @@ export interface AnserFunctionParams {
 	description: FunctionDescription,
 	config: FunctionRunConfig,
 	status: JobStatus,
+	jobId: string,
 	logger?: winston.Logger
 }
+
+export type ReportStatus = (jobId: string, status: JobStatus, msg?: string) => void
 
 /**
  * Abstract implementation of Anser functions.
@@ -71,6 +74,7 @@ export abstract class AnserFunction implements AnserFunctionParams {
 		public description: FunctionDescription,
 		public config: FunctionRunConfig,
 		public status: JobStatus = JobStatus.STARTING,
+		public jobId: string,
 		public logger?: winston.Logger
 	) {
 		if (!logger) {
@@ -87,9 +91,9 @@ export abstract class AnserFunction implements AnserFunctionParams {
 		return Promise.resolve(false)
 	}
 	/** Starts this function. */
-	public async Start (): Promise<boolean> {
+	public async Start (reportStatus: ReportStatus): Promise<boolean> {
 		if (this.Validate()) {
-			return this.start()
+			return this.start(reportStatus)
 		}
 
 		return Promise.resolve(false)
@@ -97,9 +101,9 @@ export abstract class AnserFunction implements AnserFunctionParams {
 	/** Stops this function. */
 	public abstract async Stop (): Promise<boolean>
 	/** Restarts this function. */
-	public async Restart (): Promise<boolean> {
+	public async Restart (reportStatus: ReportStatus): Promise<boolean> {
 		await this.Stop()
-		const started = await this.Start()
+		const started = await this.Start(reportStatus)
 		return Promise.resolve(started)
 	}
 	/** Gets all config options and constraints for a function. */
@@ -119,7 +123,7 @@ export abstract class AnserFunction implements AnserFunctionParams {
 	/** Validates function config. */
 	protected abstract validate (): boolean
 	/** Function start implementation. */
-	protected abstract start (): Promise<boolean>
+	protected abstract start (reportStatus: ReportStatus): Promise<boolean>
 	/** Checks on whether function can run. */
 	protected abstract canRun (): Promise<boolean>
 }

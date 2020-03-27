@@ -6,7 +6,8 @@ import {
 	FunctionDescription,
 	FunctionRunConfig,
 	JobStatus,
-	strict
+	strict,
+	ReportStatus
 } from 'anser-types'
 import * as gstreamer from 'gstreamer-superficial'
 import winston = require('winston')
@@ -26,9 +27,10 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 		description: FunctionDescription,
 		config: FunctionRunConfig,
 		status: JobStatus = JobStatus.UNKNOWN,
+		jobId: string,
 		logger?: winston.Logger
 	) {
-		super(description, config, status, logger)
+		super(description, config, status, jobId, logger)
 
 		this.pipelineString = config.get('pipeline')?.toString()
 	}
@@ -64,15 +66,16 @@ export class AnserFunctionGStreamerBase extends AnserFunction {
 		return !!this.config.get('pipeline')
 	}
 
-	protected start (): Promise<boolean> {
+	protected start (reportStatus: ReportStatus): Promise<boolean> {
 		if (!this.pipeline && this.pipelineString) {
 			this.pipeline = new gstreamer.Pipeline(this.pipelineString)
 			this.pipeline.pollBus((msg: gstreamer.IBusMsg) => {
 				switch(msg.type) {
 					case 'error':
 						this.logger?.error(msg)
-						this.status = JobStatus.FAILED_TO_START
+						this.status = JobStatus.STOPPED
 						this.pipeline?.stop()
+						reportStatus(this.jobId, this.status, JSON.stringify(msg))
 						break
 					case 'eos':
 						this.logger?.info('End of stream')

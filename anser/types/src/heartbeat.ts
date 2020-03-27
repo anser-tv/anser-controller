@@ -4,6 +4,10 @@ import { FunctionDescription } from './function/description'
 import { JobStatus } from './job/job'
 import { WorkerCommandType } from './worker-commands/worker-commands'
 
+export enum HeartbeatDataType {
+	JobStatusChanged = 'JOB_STATUS_CHANGED'
+}
+
 export interface Heartbeat {
 	time: number,
 	data: HeartbeatDataAny[]
@@ -25,8 +29,8 @@ export interface CanJobRunData {
 }
 
 interface HeartbeatDataBase {
-	commandId: ObjectId,
-	command: WorkerCommandType,
+	commandId?: ObjectId,
+	command: WorkerCommandType | HeartbeatDataType,
 	data: any
 }
 
@@ -52,7 +56,16 @@ export interface HeartbeatDataStopJob extends HeartbeatDataBase {
 	}
 }
 
-export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions | HeartbeatDataCheckJobCanRun | HeartbeatDataStopJob
+export interface HeartbeatDataJobStatusChanged extends HeartbeatDataBase {
+	command: HeartbeatDataType.JobStatusChanged,
+	data: {
+		jobId: string,
+		status: JobStatus,
+		msg?: string
+	}
+}
+
+export type HeartbeatDataAny = HeartbeatDataSystemInfo | HeartbeatDataListFunctions | HeartbeatDataCheckJobCanRun | HeartbeatDataStopJob | HeartbeatDataJobStatusChanged
 
 export interface HeartbeatResponse {
 	commands?: WorkerCommandsDB[]

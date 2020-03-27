@@ -24,7 +24,9 @@ import {
 	JobRunConfigJSON,
 	JobRunConfigToJSON,
 	TargetType,
-	WorkerCommandStopJob
+	WorkerCommandStopJob,
+	HeartbeatDataType,
+	HeartbeatDataJobStatusChanged
 } from 'anser-types'
 import { ObjectId } from 'mongodb'
 import { Config } from '../config'
@@ -145,6 +147,12 @@ export class State {
 							}
 						}
 						await this._database.collections.JOB.updateOne({ _id: new ObjectId(command.data.jobId) }, { $set: { status: command.data.status, info: command.data.info } })
+					}
+					break
+				case HeartbeatDataType.JobStatusChanged:
+					if (this.IsValidJobStatusData(command.data)) {
+						// TODO: Get existing status and compare
+						logger.info(`Job "${command.data.jobId}" has changed status to ${command.data.status}`)
 					}
 					break
 			}
@@ -279,6 +287,14 @@ export class State {
 		const keys = Object.keys(data)
 
 		return keys.includes('canRun') && keys.includes('jobId')
+	}
+
+	/**
+	 * Returns true if data is valid data for job status changes.
+	 * @param data Data to validate.
+	 */
+	public IsValidJobStatusData (data: HeartbeatDataJobStatusChanged['data']): boolean {
+		return data && !!data.jobId && !!JobStatus[data.status]
 	}
 
 	/**

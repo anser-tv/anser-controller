@@ -1,13 +1,14 @@
 import { AnserFunction, JobStatus } from '../..'
 import { JobRunConfig } from '../job/job-run-config'
 import { FunctionDescription, FunctionDescriptionMap, IdFromFunction } from './description'
-import { AnserFunctionParams } from './function'
+import { AnserFunctionParams, ReportStatus } from './function'
 import { logger } from '../logger/logger'
 
 type Constructor<T> = new (
 	description: AnserFunctionParams['description'],
 	config: AnserFunctionParams['config'],
-	status: AnserFunctionParams['status']
+	status: AnserFunctionParams['status'],
+	jobId: AnserFunctionParams['jobId']
 ) => T
 
 /**
@@ -30,8 +31,8 @@ export class AnserFunctionManifest {
 	 * Returns true if a job can run on a worker.
 	 * @param runConfig Config of the job.
 	 */
-	public async CanJobRun (runConfig: JobRunConfig): Promise<boolean> {
-		const run = this.getAnserFunction(runConfig)
+	public async CanJobRun (jobId: string, runConfig: JobRunConfig): Promise<boolean> {
+		const run = this.getAnserFunction(jobId, runConfig)
 
 		if (!run) return false
 
@@ -42,15 +43,15 @@ export class AnserFunctionManifest {
 	 * Starts a job, returns true if successful.
 	 * @param runConfig Job to start.
 	 */
-	public async StartJob (jobId: string, runConfig: JobRunConfig): Promise<boolean> {
-		const run = this.getAnserFunction(runConfig)
+	public async StartJob (jobId: string, runConfig: JobRunConfig, reportStatus: ReportStatus): Promise<boolean> {
+		const run = this.getAnserFunction(jobId, runConfig)
 
 		if (!run) return false
 
 		let started = false
 
 		try {
-			started = await run.Start()
+			started = await run.Start(reportStatus)
 		} catch (err) {
 			logger.error(err)
 		}
@@ -92,7 +93,7 @@ export class AnserFunctionManifest {
 		this._functionClasses.set(id, cls)
 	}
 
-	private getAnserFunction (runConfig: JobRunConfig): AnserFunction | undefined {
+	private getAnserFunction (jobId: string, runConfig: JobRunConfig): AnserFunction | undefined {
 		const func = this._functionClasses.get(runConfig.functionId)
 
 		if (!func) return
@@ -101,6 +102,6 @@ export class AnserFunctionManifest {
 
 		if (!desc) return
 
-		return new func(desc, runConfig.functionConfig, JobStatus.STARTING)
+		return new func(desc, runConfig.functionConfig, JobStatus.STARTING, jobId)
 	}
 }

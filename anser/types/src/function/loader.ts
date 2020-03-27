@@ -1,11 +1,11 @@
 import fs from 'fs'
 import path from 'path'
 import winston = require('winston')
-import { CanJobRunData, JobRunConfig, VersionsAreCompatible } from '../..'
 import { Job, JobStatus } from '../job/job'
 import { logger as anserLogger } from '../logger/logger'
 import { AnserFunctionManifest } from './anser-manifest'
 import { FunctionDescriptionMap } from './description'
+import { JobRunConfig, CanJobRunData, ReportStatus, VersionsAreCompatible } from '../..'
 
 export interface ConfigPackageFile {
 	name?: string,
@@ -152,15 +152,15 @@ export class FunctionLoader {
 	 * Checks whether a job can run on this worker.
 	 * @param job Job to run.
 	 */
-	public async CheckJobCanRun (job: JobRunConfig): Promise<Pick<CanJobRunData, 'canRun' | 'info'>> {
+	public async CheckJobCanRun (jobId: string, job: JobRunConfig): Promise<Pick<CanJobRunData, 'canRun' | 'info'>> {
 		const manifest = this.getFunctionManifest(job.functionId)
 
 		if (!manifest) return { canRun: false, info: `Worker cannot find function "${job.functionId}"` }
 
-		const canRun = await this.canJobRun(job, manifest)
+		const canRun = await this.canJobRun(jobId, job, manifest)
 
 		if (canRun) {
-			return { canRun: true }
+			return { canRun: true, info: 'Can run' }
 		} else {
 			return { canRun: false, info: 'Worker cannot run job' }
 		}
@@ -170,24 +170,24 @@ export class FunctionLoader {
 	 * Starts a job on this worker.
 	 * @param job Job to start.
 	 */
-	public async StartJob (jobId: string, job: JobRunConfig): Promise<Pick<CanJobRunData, 'canRun' | 'info' | 'status'>> {
+	public async StartJob (jobId: string, job: JobRunConfig, reportStatus: ReportStatus): Promise<Pick<CanJobRunData, 'canRun' | 'info' | 'status'>> {
 		const manifest = this.getFunctionManifest(job.functionId)
 
 		if (!manifest) return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Worker cannot find function "${job.functionId}"` }
 
 		this.#_jobIdToFunctionId.set(jobId, job.functionId)
 
-		if (!(await this.canJobRun(job, manifest))) {
+		if (!(await this.canJobRun(jobId, job, manifest))) {
 			return { canRun: false, status: JobStatus.FAILED_TO_START, info: `Worker failed to start job` }
 		}
 
-		const started = await manifest.StartJob(jobId, job)
+		const started = await manifest.StartJob(jobId, job, reportStatus)
 
 		if (!started) {
 			return { canRun: true, status: JobStatus.FAILED_TO_START, info: `Job can run but failed to start` }
 		}
 
-		return { canRun: true , status: JobStatus.RUNNING }
+		return { canRun: true , status: JobStatus.RUNNING, info: 'Running' }
 	}
 
 	/**
@@ -209,12 +209,12 @@ export class FunctionLoader {
 	}
 
 	private async canJobRun (
-		job: JobRunConfig, manifest: AnserFunctionManifest
+		jobId: string, job: JobRunConfig, manifest: AnserFunctionManifest
 	): Promise<boolean> {
 		let canRun = false
 
 		try {
-			canRun = await manifest.CanJobRun(job)
+			canRun = await manifest.CanJobRun(jobId, job)
 		} catch (err) {
 			this.logger.error(err)
 			this.logger.info(`Failed to call CanJobRun for function ${job.functionId}`)

@@ -14,7 +14,10 @@ import {
 	WorkerCommandType,
 	JobRunConfigFromJSON,
 	HeartbeatDataStopJob,
-	ObjectId
+	ObjectId,
+	ReportStatus,
+	HeartbeatDataJobStatusChanged,
+	HeartbeatDataType
 } from 'anser-types'
 import { post } from 'request-promise'
 import { fsSize } from 'systeminformation'
@@ -118,10 +121,10 @@ export class AnserWorker {
 						break
 					case WorkerCommandType.CheckJobCanRun:
 						const runConfig = JobRunConfigFromJSON(cmd.command.job)
-						const canRun = await this._functionLoader.CheckJobCanRun(runConfig)
+						const canRun = await this._functionLoader.CheckJobCanRun(new ObjectId(cmd.command.jobId).toHexString(), runConfig)
 						let startJob: Pick<CanJobRunData, 'canRun' | 'info' | 'status'> | undefined
 						if (cmd.command.startImmediate && canRun.canRun) {
-							startJob = await this._functionLoader.StartJob(new ObjectId(cmd.command.jobId).toHexString(), runConfig)
+							startJob = await this._functionLoader.StartJob(new ObjectId(cmd.command.jobId).toHexString(), runConfig, this.jobReportStatus)
 						}
 						data = strict<HeartbeatDataCheckJobCanRun>({
 							commandId: cmd._id,
@@ -181,5 +184,18 @@ export class AnserWorker {
 	/* istanbul ignore next */
 	private resetHeartbeat (): void {
 		this._nextHeartbeat = { time: Date.now(), data: [] }
+	}
+
+	private jobReportStatus: ReportStatus = (jobId: string, status: JobStatus, msg?: string) => {
+		this._nextHeartbeat.data.push(
+			strict<HeartbeatDataJobStatusChanged>({
+				command: HeartbeatDataType.JobStatusChanged,
+				data: {
+					jobId,
+					status,
+					msg
+				}
+			})
+		)
 	}
 }
