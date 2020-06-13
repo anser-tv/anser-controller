@@ -29,7 +29,7 @@ Ensure your code passes linting with `yarn lint`. We recoomend using VS Code and
 ## Branches
 - Branches should follow a similar naming convention to Commit Messages e.g. `feat/some-feature`, `chore/bump-package`
 - Major changes must be made on their own branch
-- Minor changes (most chores) can be done on master by those with push permissions.
+- Minor changes (most chores) can be done on main by those with push permissions.
 
 ## Tests
 
