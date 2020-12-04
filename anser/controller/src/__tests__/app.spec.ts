@@ -2,10 +2,14 @@ import {
 	AnserDatabase,
 	DBCollections,
 	Heartbeat,
+	HeartbeatDataSystemInfo,
+	HeartbeatResponse,
 	strict,
 	stripId,
 	StrippedHeartbeatsDB,
+	StrippedWorkerCommandsDB,
 	WorkerCommand,
+	WorkerCommandsDB,
 	WorkerCommandType,
 	WorkerStatus
 } from 'anser-types'
@@ -148,7 +152,7 @@ describe('Controller app: Gets all workers of a given status', () => {
 	})
 })
 
-describe ('Controller app: Gets worker status', () => {
+describe('Controller app: Gets worker status', () => {
 	it('Gets status for existing worker', async () => {
 		await database.collections.WORKER.insertOne(
 			{ workerId: 'test-worker1', status: WorkerStatus.ONLINE }
@@ -158,13 +162,13 @@ describe ('Controller app: Gets worker status', () => {
 		)
 		const res = await getFromApp(`/anser/workers/test-worker1/status`, 'Hello', ANSER_VERSION)
 		app.Close()
-		expect(res.body).toEqual({ status: 'ONLINE'})
+		expect(res.body).toEqual({ status: 'ONLINE' })
 	})
 
 	it('Returns NOT_REGISTERED for non-existant worker', async () => {
 		const res = await getFromApp(`/anser/workers/test-worker1/status`, 'Hello', ANSER_VERSION)
 		app.Close()
-		expect(res.body).toEqual({ status: 'NOT_REGISTERED'})
+		expect(res.body).toEqual({ status: 'NOT_REGISTERED' })
 	})
 })
 
@@ -202,8 +206,8 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 		}
 		const res = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
 		expect(res.status).toEqual(200)
-		expect(res.body.commands).toContainEqual(
-			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		expect(stripId(res.body.commands)).toContainEqual(
+			strict<StrippedWorkerCommandsDB>({ workerId: 'test-worker', command: { type: WorkerCommandType.SendSystemInfo } })
 		)
 	})
 
@@ -213,7 +217,9 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 			time: 0
 		}
 		const res1 = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
-		heartbeat.data = [{
+		const command = res1.body.commands.find((c: WorkerCommandsDB) => c.command.type === WorkerCommandType.SendSystemInfo)
+		heartbeat.data = [strict<HeartbeatDataSystemInfo>({
+			commandId: command._id,
 			command: WorkerCommandType.SendSystemInfo,
 			data: {
 				cpu_usage_percent: 50,
@@ -222,17 +228,17 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 				ram_available: 40,
 				ram_used: 35
 			}
-		}]
+		})]
 		const res2 = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
 		app.Close()
 		expect(res1.status).toEqual(200)
-		expect(res1.body.commands).toContainEqual(
-			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		expect(stripId(res1.body.commands)).toContainEqual(
+			strict<StrippedWorkerCommandsDB>({ workerId: 'test-worker', command: { type: WorkerCommandType.SendSystemInfo } })
 		)
 
 		expect(res2.status).toEqual(200)
-		expect(res2.body.commands).not.toContainEqual(
-			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		expect(stripId(res2.body.commands)).not.toContainEqual(
+			strict<StrippedWorkerCommandsDB>({ workerId: 'test-worker', command: { type: WorkerCommandType.SendSystemInfo } })
 		)
 	})
 
@@ -249,13 +255,13 @@ describe('Controller app: Adds a heartbeat to a given worker', () => {
 		const res2 = await postToApp(`/anser/heartbeat/test-worker`, 'Hello', ANSER_VERSION, heartbeat)
 		app.Close()
 		expect(res1.status).toEqual(200)
-		expect(res1.body.commands).toContainEqual(
-			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		expect(stripId(res1.body.commands)).toContainEqual(
+			strict<StrippedWorkerCommandsDB>({ workerId: 'test-worker', command: { type: WorkerCommandType.SendSystemInfo } })
 		)
 
 		expect(res2.status).toEqual(200)
-		expect(res2.body.commands).toContainEqual(
-			strict<WorkerCommand>({ commandId: '', type: WorkerCommandType.SendSystemInfo })
+		expect(stripId(res2.body.commands)).toContainEqual(
+			strict<StrippedWorkerCommandsDB>({ workerId: 'test-worker', command: { type: WorkerCommandType.SendSystemInfo } })
 		)
 	})
 })

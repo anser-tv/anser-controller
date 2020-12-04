@@ -224,37 +224,36 @@ describe('RequestSystemInfo', () => {
 	})
 
 	it('Recognises valid system info data', () => {
-		const systemInfoData: FunctionDescriptionMap = {
-			somehash: {
-				author: '',
-				config: [],
-				inputs: [],
-				main: '',
-				name: '',
-				outputs: [],
-				packageName: '',
-				targetVersion: '',
-				version: ''
-			}
-		}
+		const systemInfoData: FunctionDescriptionMap = new Map()
+		systemInfoData.set('somehash', {
+			author: '',
+			config: [],
+			inputs: [],
+			main: '',
+			name: '',
+			outputs: [],
+			packageName: '',
+			targetVersion: '',
+			version: ''
+		})
 		const result = state.IsValidListFunctionsData(systemInfoData)
 		state.StopManager()
 		expect(result).toBe(true)
 	})
 
 	it('Recognises invalid system info data', () => {
-		const systemInfoData: FunctionDescriptionMap = {
-			somehash: strict<Omit<FunctionDescription, 'version'>>({
-				author: '',
-				config: [],
-				inputs: [],
-				main: '',
-				name: '',
-				outputs: [],
-				packageName: '',
-				targetVersion: ''
-			}) as any
-		}
+		const systemInfoData: FunctionDescriptionMap = new Map()
+		systemInfoData.set('somehash', strict<Omit<FunctionDescription, 'version'>>({
+			author: '',
+			config: [],
+			inputs: [],
+			main: '',
+			name: '',
+			outputs: [],
+			packageName: '',
+			targetVersion: ''
+		}) as any)
+
 		const result1 = state.IsValidListFunctionsData(null as any)
 		const result2 = state.IsValidListFunctionsData('func' as any)
 		const result3 = state.IsValidListFunctionsData(undefined as any)

@@ -4,6 +4,9 @@ export interface VideoOutputJSON extends VideoIOJSON {
 	output: true
 }
 
+/**
+ * Represents a video output
+ */
 export class VideoOutput extends VideoIO {
 	constructor (
 		public name: string,

@@ -19,7 +19,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -37,7 +37,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -55,7 +55,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -73,7 +73,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -91,7 +91,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -110,7 +110,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -128,7 +128,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -146,7 +146,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -164,7 +164,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -183,7 +183,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -204,7 +204,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -221,7 +221,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -241,7 +241,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -259,7 +259,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -277,7 +277,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -295,7 +295,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -313,7 +313,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -331,7 +331,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -349,7 +349,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -367,7 +367,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -385,7 +385,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -403,7 +403,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -423,7 +423,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -444,7 +444,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -461,7 +461,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -481,7 +481,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -499,7 +499,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -517,7 +517,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 
@@ -535,7 +535,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeTruthy()
+			expect(ValidateFunctionConfig(config, map)).toBe(true)
 		})
 	})
 
@@ -552,7 +552,7 @@ describe('Validate Config', () => {
 		testValues.forEach((val) => {
 			const config: FunctionRunConfig = new Map()
 			config.set('test1', val)
-			expect(ValidateFunctionConfig(config, map)).toBeFalsy()
+			expect(ValidateFunctionConfig(config, map)).toBe(false)
 		})
 	})
 })

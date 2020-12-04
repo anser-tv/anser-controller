@@ -6,3 +6,5 @@ export interface WorkerCommandsDB {
 	workerId: string
 	command: WorkerCommand
 }
+
+export type StrippedWorkerCommandsDB = Omit<WorkerCommandsDB, '_id'>

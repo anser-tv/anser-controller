@@ -1,4 +1,4 @@
-import { VideoOutput } from '../../dist'
+import { VideoOutput } from '../..'
 import { VideoIO, VideoIOType } from '../function/video-io/video-io'
 
 describe ('VideoIO', () => {

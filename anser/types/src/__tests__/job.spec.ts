@@ -1,8 +1,9 @@
 import { ConfigType, FunctionConfig, FunctionDescription } from '../function/description'
 import { ConfigContraintType, FunctionRunConfig } from '../function/function'
 import { VideoIO, VideoIOType } from '../function/video-io/video-io'
-import { Job } from '../job/job'
+import { Job, JobTarget, TargetType } from '../job/job'
 import { JobRunConfig } from '../job/job-run-config'
+import { strict } from '../strict'
 
 const sampleInput = new VideoIO('Input', 'input', VideoIOType.RTMP, '1080i50', '16:9')
 const sampleOutput = new VideoIO('Output', 'output', VideoIOType.RTMP, '1080i50', '16:9')
@@ -46,7 +47,7 @@ const jobRConfig = new JobRunConfig('', jobConf, jobInputs, jobOutputs)
 describe('Job', () => {
 	it('Never can run', () => {
 		const job = new Job(
-			{ workerId: 'test-worker' },
+			strict<JobTarget>({ type: TargetType.WORKER, workerId: 'test-worker' }),
 			jobRConfig
 		)
 		return job.CanRun().then((result) => expect(result).toBe(false))
@@ -54,7 +55,7 @@ describe('Job', () => {
 
 	it('Never runs', () => {
 		const job = new Job(
-			{ workerId: 'test-worker' },
+			strict<JobTarget>({ type: TargetType.WORKER, workerId: 'test-worker' }),
 			jobRConfig
 		)
 		return job.Run().then((result) => expect(result).toEqual(false))
@@ -62,7 +63,7 @@ describe('Job', () => {
 
 	it('Never can stop', () => {
 		const job = new Job(
-			{ workerId: 'test-worker' },
+			strict<JobTarget>({ type: TargetType.WORKER, workerId: 'test-worker' }),
 			jobRConfig
 		)
 		return job.Stop().then((result) => expect(result).toEqual(false))

@@ -1,5 +1,8 @@
+import { FunctionDescription } from '../..'
+import { FunctionDescriptionMap } from '../function/description'
 import { FunctionLoader, FunctionPackageFile } from '../function/loader'
 import { logger } from '../logger/logger'
+import { strict } from '../strict'
 
 describe('Function Loader', () => {
 	it ('Accepts compatible versions', () => {
@@ -62,23 +65,10 @@ describe('Function Loader', () => {
 
 	it ('Returns functions', () => {
 		const loader = new FunctionLoader('', 'v0.0', logger, true)
-		loader.loadedFunctions = {
-			'test-function': {
-				name: '',
-				packageName: '',
-				author: '',
-				version: '',
-				targetVersion: '',
-				main: '',
-				config: [],
-				outputs: [],
-				inputs: []
-			}
-		}
 
-		expect(loader.GetFunctions()).toEqual({
-			'test-function': {
-				name: '',
+		const testMap: FunctionDescriptionMap = new Map()
+		testMap.set('test-function', strict<FunctionDescription>({
+			name: '',
 				packageName: '',
 				author: '',
 				version: '',
@@ -87,7 +77,10 @@ describe('Function Loader', () => {
 				config: [],
 				outputs: [],
 				inputs: []
-			}
-		})
+		}))
+
+		loader.loadedFunctions = testMap
+
+		expect(loader.GetFunctions()).toEqual(testMap)
 	})
 })

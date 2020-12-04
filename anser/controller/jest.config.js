@@ -9,17 +9,7 @@ module.exports = {
 	collectCoverageFrom: [
 		"**/*.ts",
 		"!src/__tests__/**",
-		"!src/index.ts",
-		"!src/logger/logger.ts"
 	],
-	coverageThreshold: {
-		global: {
-			branches: 80,
-			functions: 80,
-			lines: 80,
-			statements: 80
-		}
-	},
 	testEnvironment: "node",
 	preset: '@shelf/jest-mongodb'
 }

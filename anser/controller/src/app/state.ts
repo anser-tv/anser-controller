@@ -94,14 +94,15 @@ export class State {
 		let forceRequestAll = false
 		if (!worker) {
 			logger.info(`Worker ${workerId} connected`)
-			this._database.collections.WORKER.insertOne(
+			forceRequestAll = true
+			await this._database.collections.WORKER.insertOne(
 				{ workerId, status: WorkerStatus.ONLINE }
 			)
 		} else {
 			if (worker.status === WorkerStatus.OFFLINE) {
 				logger.info(`Worker ${workerId} reconnected`)
 				forceRequestAll = true
-				this._database.collections.WORKER.updateOne(
+				await this._database.collections.WORKER.updateOne(
 					{ workerId }, { $set: { status: WorkerStatus.ONLINE } },
 					{ upsert: true }
 				)
@@ -111,7 +112,7 @@ export class State {
 		this._database.collections.WORKER_HEARTBEAT.insertOne(
 			{ workerId, time: heartbeat.time, data: heartbeat.data }
 		)
-		heartbeat.data.forEach(async (command) => {
+		for (const command of heartbeat.data) {
 			await this._database.collections.COMMAND.deleteOne({ _id: new ObjectId(command.commandId) })
 			switch(command.command) {
 				case WorkerCommandType.SendSystemInfo:
@@ -156,16 +157,16 @@ export class State {
 					}
 					break
 			}
-		})
+		}
 
 		const reqSystemInfo = forceRequestAll || await this.requestSystemInfo(workerId)
 		if (reqSystemInfo) {
-			await this.requestSystemInfo(workerId)
+			await this.getSystemInfoFromWorker(workerId)
 		}
 
 		const reqFunctionList = forceRequestAll || await this.requestFunctionList(workerId)
 		if (reqFunctionList) {
-			await this.requestFunctionList(workerId)
+			await this.getFunctionsFromWorker(workerId)
 		}
 
 		const commands: WorkerCommandsDB[] =
@@ -250,7 +251,7 @@ export class State {
 			version: ''
 		}
 
-		for (const key of Object.keys(data)) {
+		for (const key of data.keys()) {
 			const funcs = data.get(key)
 
 			if (!funcs) return false
